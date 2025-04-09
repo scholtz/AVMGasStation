@@ -1,7 +1,9 @@
 import { Config } from '@algorandfoundation/algokit-utils'
 import { registerDebugEventHandlers } from '@algorandfoundation/algokit-utils-debug'
 import { algorandFixture } from '@algorandfoundation/algokit-utils/testing'
-import { Address } from 'algosdk'
+import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
+import { BoxIdentifier } from '@algorandfoundation/algokit-utils/types/app-manager'
+import algosdk, { Address } from 'algosdk'
 import { beforeAll, beforeEach, describe, expect, test } from 'vitest'
 import { GasStationFactory } from '../artifacts/gas_station/GasStationClient'
 
@@ -28,26 +30,48 @@ describe('GasStation contract', () => {
     return { client: appClient }
   }
 
-  test('says hello', async () => {
+  test('can deploy and update', async () => {
     const { testAccount } = localnet.context
     const { client } = await deploy(testAccount)
+    const executorAfterDeploy = await client.state.global.addressExecutive()
+    const updaterAfterDeploy = await client.state.global.addressUdpater()
+    const versionAfterDeploy = await client.state.global.version()
+    expect(executorAfterDeploy).toBe(algosdk.encodeAddress(testAccount.addr.publicKey))
+    expect(updaterAfterDeploy).toBe(algosdk.encodeAddress(testAccount.addr.publicKey))
+    expect(versionAfterDeploy).toBe('BIATEC-GAS-01-01-01')
+    const result = await client.send.update.updateApplication({ args: { newVersion: '2' } })
+    const versionAfterUpdate = await client.state.global.version()
+    expect(versionAfterUpdate).toBe('2')
 
-    const result = await client.send.hello({ args: { name: 'World' } })
-
-    expect(result.return).toBe('Hello, World')
+    expect(result.return).toBe(true)
   })
-
-  test('simulate says hello with correct budget consumed', async () => {
-    const { testAccount } = localnet.context
+  test('can deposit', async () => {
+    const { testAccount, algod } = localnet.context
     const { client } = await deploy(testAccount)
-    const result = await client
-      .newGroup()
-      .hello({ args: { name: 'World' } })
-      .hello({ args: { name: 'Jane' } })
-      .simulate()
+    const executorAfterDeploy = await client.state.global.addressExecutive()
+    const updaterAfterDeploy = await client.state.global.addressUdpater()
+    const versionAfterDeploy = await client.state.global.version()
+    const suspendedAfterDeploy = await client.state.global.suspended()
+    expect(executorAfterDeploy).toBe(algosdk.encodeAddress(testAccount.addr.publicKey))
+    expect(updaterAfterDeploy).toBe(algosdk.encodeAddress(testAccount.addr.publicKey))
+    expect(versionAfterDeploy).toBe('BIATEC-GAS-01-01-01')
+    expect(suspendedAfterDeploy).toBe(0n)
+    const params = await algod.getTransactionParams().do()
 
-    expect(result.returns[0]).toBe('Hello, World')
-    expect(result.returns[1]).toBe('Hello, Jane')
-    expect(result.simulateResponse.txnGroups[0].appBudgetConsumed).toBeLessThan(100)
+    var box: BoxIdentifier = new Uint8Array(Buffer.concat([Buffer.from('c', 'ascii'), testAccount.publicKey]))
+
+    await client.send.deposit({
+      args: {
+        txnDeposit: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+          amount: 1_000_000,
+          receiver: client.appAddress,
+          sender: testAccount,
+          suggestedParams: params,
+        }),
+      },
+      maxFee: AlgoAmount.MicroAlgo(2000),
+      staticFee: AlgoAmount.MicroAlgo(2000),
+      boxReferences: [box],
+    })
   })
 })

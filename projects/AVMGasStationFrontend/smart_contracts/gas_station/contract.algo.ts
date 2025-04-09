@@ -1,7 +1,228 @@
-import { Contract } from '@algorandfoundation/algorand-typescript'
+import {
+  Account,
+  arc4,
+  assert,
+  BoxMap,
+  bytes,
+  Contract,
+  Global,
+  GlobalState,
+  gtxn,
+  itxn,
+  Txn,
+  uint64,
+} from '@algorandfoundation/algorand-typescript'
+import { Address, Str, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
+
+class UserStruct extends arc4.Struct<{
+  balance: UintN64
+  configuration: arc4.Str
+}> {}
+const version = 'BIATEC-GAS-01-01-01'
 
 export class GasStation extends Contract {
-  public hello(name: string): string {
-    return `Hello, ${name}`
+  public configuration = BoxMap<Address, UserStruct>({ keyPrefix: 'c' })
+  public allDeposits = GlobalState<uint64>() // difference between this value and real value is the protocol fee accumulation
+
+  /**
+   * Top secret multisig account with which it is possible update user contracts or biatec contracts.
+   */
+  addressUdpater = GlobalState<Address>({ key: 'u' })
+  /**
+   * Address which can execute the gas distribution. In possession of the Biatec.
+   */
+  addressExecutive = GlobalState<Address>({ key: 'e' })
+  /**
+   * Version of the smart contract
+   */
+  version = GlobalState<string>({ key: 'scver' })
+
+  /**
+   * Kill switch. In the extreme case all services (deposit, trading, withdrawal, identity modifications and more) can be suspended.
+   * Only addressUdpater multisig can modify this setting.
+   */
+  suspended = GlobalState<boolean>({ key: 's' })
+  /**
+   * Initial setup
+   */
+  public constructor() {
+    super()
+    this.addressUdpater.value = new Address(Txn.sender)
+    this.version.value = version
+    this.addressExecutive.value = new Address(Txn.sender)
+    this.suspended.value = false
+  }
+
+  /**
+   * addressUdpater from global biatec configuration is allowed to update application
+   */
+  @arc4.abimethod({ allowActions: 'UpdateApplication' })
+  updateApplication(newVersion: string): boolean {
+    assert(
+      this.addressUdpater.value === new Address(Txn.sender),
+      'Only addressUdpater setup in the config can update application',
+    )
+    this.version.value = newVersion
+    return true
+  }
+
+  /**
+   * Execution address with which it is possible to fund other addresses
+   *
+   * @param a Address
+   */
+  @arc4.abimethod()
+  setAddressExecutive(a: Address) {
+    assert(this.addressUdpater.value === new Address(Txn.sender), 'Only updater can change addressExecutive')
+    this.addressExecutive.value = a
+  }
+
+  /**
+   * Execution address with which it is possible to fund other addresses
+   *
+   * @param a Address
+   */
+  @arc4.abimethod()
+  setSuspended(isSuspended: boolean) {
+    assert(this.addressUdpater.value === new Address(Txn.sender), 'Only updater can change addressExecutive')
+    this.suspended.value = isSuspended
+  }
+
+  /**
+   * Gas Funder can set configuration with the deposit tx
+   *
+   * Service fee is 5% and is deducted on deposit, on deposit of 100 Algo, user receives 95 Algo credit for his users to use for gas
+   * @param txnDeposit Deposit transaction
+   * @param configuration Configration to be stored into the box
+   */
+  @arc4.abimethod()
+  public depositWithConfiguration(txnDeposit: gtxn.PaymentTxn, configuration: Str): void {
+    assert(!this.suspended.value, 'The smart contract is suspended at the moment')
+    var sender = new arc4.Address(txnDeposit.sender)
+    const fee: uint64 = txnDeposit.amount / 20 //5%
+    const deposit: uint64 = txnDeposit.amount - fee
+
+    this.allDeposits.value += deposit
+
+    assert(txnDeposit.receiver === Global.currentApplicationAddress, 'Receiver must be the gas station app')
+
+    if (this.configuration(sender).exists) {
+      this.configuration(sender).value.balance = new UintN64(deposit + this.configuration(sender).value.balance.native)
+      this.configuration(sender).value.configuration = configuration
+    } else {
+      const newValue = new UserStruct({
+        balance: new UintN64(deposit),
+        configuration: configuration,
+      })
+      this.configuration(sender).value = newValue.copy()
+    }
+  }
+
+  /**
+   * Gas Funder can deposit more algos to his funder account deposit
+   *
+   * Service fee is 5% and is deducted on deposit, on deposit of 100 Algo, user receives 95 Algo credit for his users to use for gas
+   * @param txnDeposit Deposit transaction
+   */
+  @arc4.abimethod()
+  public deposit(txnDeposit: gtxn.PaymentTxn): void {
+    assert(!this.suspended.value, 'The smart contract is suspended at the moment')
+    var sender = new arc4.Address(txnDeposit.sender)
+    const fee: uint64 = txnDeposit.amount / 20 //5%
+    const deposit: uint64 = txnDeposit.amount - fee
+
+    this.allDeposits.value += deposit
+
+    assert(txnDeposit.receiver === Global.currentApplicationAddress, 'Receiver must be the gas station app')
+
+    assert(this.configuration(sender).exists, 'Funder must set configuration first')
+
+    this.configuration(sender).value.balance = new UintN64(deposit + this.configuration(sender).value.balance.native)
+  }
+
+  /**
+   * Executor can fund the account which needs gas to execute the transaction
+   *
+   * @param amount Amout to send
+   * @param receiver Receiver
+   * @param note Note
+   * @returns
+   */
+  @arc4.abimethod()
+  public fundAccount(amount: uint64, receiver: Account, note: string, funder: Address): bytes {
+    assert(!this.suspended.value, 'The smart contract is suspended at the moment')
+    assert(this.addressExecutive.value === new Address(Txn.sender), 'Only executor can use this method')
+    assert(this.configuration(funder).exists, 'Funder box does not exists')
+    assert(this.configuration(funder).value.balance.native < amount + 2000, 'Funder is out of the deposit')
+
+    // 2000 is constant the network fees
+
+    const itxnResult = itxn
+      .payment({
+        amount: amount,
+        receiver: receiver,
+        note: note,
+      })
+      .submit()
+
+    // in case of edge case if current fees are > 2000 the tx fails here
+    this.configuration(funder).value.balance = new UintN64(
+      this.configuration(funder).value.balance.native - amount - itxnResult.fee * 2,
+    )
+
+    return itxnResult.txnId
+  }
+  /**
+   * Biatec can withdraw service fees. The current balance
+   *
+   * @param amount Amout to send
+   * @param receiver Receiver
+   * @param note Note
+   * @returns
+   */
+  @arc4.abimethod()
+  public withdraw(receiver: Account): bytes {
+    assert(!this.suspended.value, 'The smart contract is suspended at the moment')
+    assert(this.addressUdpater.value === new Address(Txn.sender), 'Only updater can use this method')
+
+    var excessBalance: uint64 = Global.currentApplicationAddress.balance - this.allDeposits.value
+
+    const itxnResult = itxn
+      .payment({
+        amount: excessBalance,
+        receiver: receiver,
+        note: 'service fee withdrawal',
+      })
+      .submit()
+    return itxnResult.txnId
+  }
+
+  /**
+   * Updater can perfom key registration for this LP pool
+   */
+  @arc4.abimethod()
+  public sendOnlineKeyRegistration(
+    voteKey: bytes,
+    selectionKey: bytes,
+    stateProofKey: bytes,
+    voteFirst: uint64,
+    voteLast: uint64,
+    voteKeyDilution: uint64,
+    fee: uint64,
+  ): bytes {
+    assert(!this.suspended.value, 'The smart contract is suspended at the moment')
+    assert(this.addressUdpater.value === new Address(Txn.sender), 'Only updater can use this method')
+    const itxnResult = itxn
+      .keyRegistration({
+        selectionKey: selectionKey,
+        stateProofKey: stateProofKey,
+        voteFirst: voteFirst,
+        voteKeyDilution: voteKeyDilution,
+        voteLast: voteLast,
+        voteKey: voteKey,
+        fee: fee,
+      })
+      .submit()
+    return itxnResult.txnId
   }
 }

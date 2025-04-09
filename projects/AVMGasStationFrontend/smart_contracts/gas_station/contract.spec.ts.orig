@@ -1,0 +1,15 @@
+// import { TestExecutionContext } from '@algorandfoundation/algorand-typescript-testing'
+// import { describe, expect, it } from 'vitest'
+// import { GasStation } from './contract.algo'
+
+// describe('GasStation contract', () => {
+//   const ctx = new TestExecutionContext()
+//   it('Logs the returned value when sayHello is called', () => {
+//     console.log('ctx.defaultSender', ctx.defaultSender)
+//     const contract = ctx.contract.create(GasStation)
+//     expect(contract.addressExecutive).not.toBeNull()
+//     expect(contract.addressExecutive).toBe(contract.addressUdpater)
+
+//     // expect(result).toBe('Hello, Sally')
+//   })
+// })
