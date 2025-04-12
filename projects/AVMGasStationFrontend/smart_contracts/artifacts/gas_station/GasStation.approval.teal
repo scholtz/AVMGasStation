@@ -3,65 +3,72 @@
 
 // @algorandfoundation/algorand-typescript/arc4/index.d.ts::Contract.approvalProgram() -> uint64:
 main:
-    intcblock 0 1 20 2
-    bytecblock "s" "u" "allDeposits" 0x151f7c75 "e" "c" "scver"
+    intcblock 0 1 8 20
+    bytecblock "s" 0x151f7c75 "c" "u" "allDeposits" "e" "scver"
     txn ApplicationID
     bnz main_after_if_else@2
-    // smart_contracts/gas_station/contract.algo.ts:30
+    // smart_contracts/gas_station/contract.algo.ts:31
     // addressUdpater = GlobalState<Address>({ key: 'u' })
-    bytec_1 // "u"
-    // smart_contracts/gas_station/contract.algo.ts:50
+    bytec_3 // "u"
+    // smart_contracts/gas_station/contract.algo.ts:51
     // this.addressUdpater.value = new Address(Txn.sender)
     txn Sender
     app_global_put
-    // smart_contracts/gas_station/contract.algo.ts:38
+    // smart_contracts/gas_station/contract.algo.ts:39
     // version = GlobalState<string>({ key: 'scver' })
     bytec 6 // "scver"
-    // smart_contracts/gas_station/contract.algo.ts:21
+    // smart_contracts/gas_station/contract.algo.ts:22
     // const version = 'BIATEC-GAS-01-01-01'
     pushbytes "BIATEC-GAS-01-01-01"
-    // smart_contracts/gas_station/contract.algo.ts:51
+    // smart_contracts/gas_station/contract.algo.ts:52
     // this.version.value = version
     app_global_put
-    // smart_contracts/gas_station/contract.algo.ts:34
+    // smart_contracts/gas_station/contract.algo.ts:35
     // addressExecutive = GlobalState<Address>({ key: 'e' })
-    bytec 4 // "e"
-    // smart_contracts/gas_station/contract.algo.ts:52
+    bytec 5 // "e"
+    // smart_contracts/gas_station/contract.algo.ts:53
     // this.addressExecutive.value = new Address(Txn.sender)
     txn Sender
     app_global_put
-    // smart_contracts/gas_station/contract.algo.ts:44
+    // smart_contracts/gas_station/contract.algo.ts:45
     // suspended = GlobalState<boolean>({ key: 's' })
     bytec_0 // "s"
-    // smart_contracts/gas_station/contract.algo.ts:53
+    // smart_contracts/gas_station/contract.algo.ts:54
     // this.suspended.value = false
+    intc_0 // 0
+    app_global_put
+    // smart_contracts/gas_station/contract.algo.ts:26
+    // public allDeposits = GlobalState<uint64>() // difference between this value and real value is the protocol fee accumulation
+    bytec 4 // "allDeposits"
+    // smart_contracts/gas_station/contract.algo.ts:55
+    // this.allDeposits.value = 0
     intc_0 // 0
     app_global_put
 
 main_after_if_else@2:
-    // smart_contracts/gas_station/contract.algo.ts:23
+    // smart_contracts/gas_station/contract.algo.ts:24
     // export class GasStation extends Contract {
     txn NumAppArgs
-    bz main_bare_routing@15
-    pushbytess 0x70a65e89 0x8b187b3d 0xe9a3d6a8 0x6792dd25 0x3625e4eb 0x5d15f637 0x7c99073a 0xc61d56f5 // method "updateApplication(string)bool", method "setAddressExecutive(address)void", method "setSuspended(bool)void", method "depositWithConfiguration(pay,string)void", method "deposit(pay)void", method "fundAccount(uint64,account,string,address)byte[]", method "withdraw(account)byte[]", method "sendOnlineKeyRegistration(byte[],byte[],byte[],uint64,uint64,uint64,uint64)byte[]"
+    bz main_bare_routing@18
+    pushbytess 0x70a65e89 0x8b187b3d 0xe9a3d6a8 0x0096f53b 0xd602260f 0x4a1dc5e8 0x6792dd25 0x3625e4eb 0x17b3ad7a 0x8d39acb1 0xc61d56f5 // method "updateApplication(string)bool", method "setAddressExecutive(address)void", method "setSuspended(bool)void", method "getFunderBalance(address)uint64", method "getFunderConfiguration(address)string", method "getFunderBox(address)(uint64,string)", method "depositWithConfiguration(pay,string)void", method "deposit(pay)void", method "fundAccount(uint64,address,string,address)byte[]", method "withdraw(address,uint64)byte[]", method "sendOnlineKeyRegistration(byte[],byte[],byte[],uint64,uint64,uint64,uint64)byte[]"
     txna ApplicationArgs 0
-    match main_updateApplication_route@5 main_setAddressExecutive_route@6 main_setSuspended_route@7 main_depositWithConfiguration_route@8 main_deposit_route@9 main_fundAccount_route@10 main_withdraw_route@11 main_sendOnlineKeyRegistration_route@12
+    match main_updateApplication_route@5 main_setAddressExecutive_route@6 main_setSuspended_route@7 main_getFunderBalance_route@8 main_getFunderConfiguration_route@9 main_getFunderBox_route@10 main_depositWithConfiguration_route@11 main_deposit_route@12 main_fundAccount_route@13 main_withdraw_route@14 main_sendOnlineKeyRegistration_route@15
 
-main_after_if_else@19:
-    // smart_contracts/gas_station/contract.algo.ts:23
+main_after_if_else@22:
+    // smart_contracts/gas_station/contract.algo.ts:24
     // export class GasStation extends Contract {
     intc_0 // 0
     return
 
-main_sendOnlineKeyRegistration_route@12:
-    // smart_contracts/gas_station/contract.algo.ts:203
+main_sendOnlineKeyRegistration_route@15:
+    // smart_contracts/gas_station/contract.algo.ts:257
     // @arc4.abimethod()
     txn OnCompletion
     !
     assert // OnCompletion is not NoOp
     txn ApplicationID
     assert // can only call when not creating
-    // smart_contracts/gas_station/contract.algo.ts:23
+    // smart_contracts/gas_station/contract.algo.ts:24
     // export class GasStation extends Contract {
     txna ApplicationArgs 1
     extract 2 0
@@ -77,7 +84,7 @@ main_sendOnlineKeyRegistration_route@12:
     btoi
     txna ApplicationArgs 7
     btoi
-    // smart_contracts/gas_station/contract.algo.ts:203
+    // smart_contracts/gas_station/contract.algo.ts:257
     // @arc4.abimethod()
     callsub sendOnlineKeyRegistration
     dup
@@ -86,27 +93,26 @@ main_sendOnlineKeyRegistration_route@12:
     extract 6 2
     swap
     concat
-    bytec_3 // 0x151f7c75
+    bytec_1 // 0x151f7c75
     swap
     concat
     log
     intc_1 // 1
     return
 
-main_withdraw_route@11:
-    // smart_contracts/gas_station/contract.algo.ts:183
+main_withdraw_route@14:
+    // smart_contracts/gas_station/contract.algo.ts:218
     // @arc4.abimethod()
     txn OnCompletion
     !
     assert // OnCompletion is not NoOp
     txn ApplicationID
     assert // can only call when not creating
-    // smart_contracts/gas_station/contract.algo.ts:23
+    // smart_contracts/gas_station/contract.algo.ts:24
     // export class GasStation extends Contract {
     txna ApplicationArgs 1
-    btoi
-    txnas Accounts
-    // smart_contracts/gas_station/contract.algo.ts:183
+    txna ApplicationArgs 2
+    // smart_contracts/gas_station/contract.algo.ts:218
     // @arc4.abimethod()
     callsub withdraw
     dup
@@ -115,32 +121,30 @@ main_withdraw_route@11:
     extract 6 2
     swap
     concat
-    bytec_3 // 0x151f7c75
+    bytec_1 // 0x151f7c75
     swap
     concat
     log
     intc_1 // 1
     return
 
-main_fundAccount_route@10:
-    // smart_contracts/gas_station/contract.algo.ts:151
+main_fundAccount_route@13:
+    // smart_contracts/gas_station/contract.algo.ts:183
     // @arc4.abimethod()
     txn OnCompletion
     !
     assert // OnCompletion is not NoOp
     txn ApplicationID
     assert // can only call when not creating
-    // smart_contracts/gas_station/contract.algo.ts:23
+    // smart_contracts/gas_station/contract.algo.ts:24
     // export class GasStation extends Contract {
     txna ApplicationArgs 1
     btoi
     txna ApplicationArgs 2
-    btoi
-    txnas Accounts
     txna ApplicationArgs 3
     extract 2 0
     txna ApplicationArgs 4
-    // smart_contracts/gas_station/contract.algo.ts:151
+    // smart_contracts/gas_station/contract.algo.ts:183
     // @arc4.abimethod()
     callsub fundAccount
     dup
@@ -149,22 +153,22 @@ main_fundAccount_route@10:
     extract 6 2
     swap
     concat
-    bytec_3 // 0x151f7c75
+    bytec_1 // 0x151f7c75
     swap
     concat
     log
     intc_1 // 1
     return
 
-main_deposit_route@9:
-    // smart_contracts/gas_station/contract.algo.ts:127
+main_deposit_route@12:
+    // smart_contracts/gas_station/contract.algo.ts:159
     // @arc4.abimethod()
     txn OnCompletion
     !
     assert // OnCompletion is not NoOp
     txn ApplicationID
     assert // can only call when not creating
-    // smart_contracts/gas_station/contract.algo.ts:23
+    // smart_contracts/gas_station/contract.algo.ts:24
     // export class GasStation extends Contract {
     txn GroupIndex
     intc_1 // 1
@@ -174,21 +178,21 @@ main_deposit_route@9:
     intc_1 // pay
     ==
     assert // transaction type is pay
-    // smart_contracts/gas_station/contract.algo.ts:127
+    // smart_contracts/gas_station/contract.algo.ts:159
     // @arc4.abimethod()
     callsub deposit
     intc_1 // 1
     return
 
-main_depositWithConfiguration_route@8:
-    // smart_contracts/gas_station/contract.algo.ts:98
+main_depositWithConfiguration_route@11:
+    // smart_contracts/gas_station/contract.algo.ts:128
     // @arc4.abimethod()
     txn OnCompletion
     !
     assert // OnCompletion is not NoOp
     txn ApplicationID
     assert // can only call when not creating
-    // smart_contracts/gas_station/contract.algo.ts:23
+    // smart_contracts/gas_station/contract.algo.ts:24
     // export class GasStation extends Contract {
     txn GroupIndex
     intc_1 // 1
@@ -199,50 +203,119 @@ main_depositWithConfiguration_route@8:
     ==
     assert // transaction type is pay
     txna ApplicationArgs 1
-    // smart_contracts/gas_station/contract.algo.ts:98
+    // smart_contracts/gas_station/contract.algo.ts:128
     // @arc4.abimethod()
     callsub depositWithConfiguration
     intc_1 // 1
     return
 
+main_getFunderBox_route@10:
+    // smart_contracts/gas_station/contract.algo.ts:116
+    // @arc4.abimethod({ readonly: true })
+    txn OnCompletion
+    !
+    assert // OnCompletion is not NoOp
+    txn ApplicationID
+    assert // can only call when not creating
+    // smart_contracts/gas_station/contract.algo.ts:24
+    // export class GasStation extends Contract {
+    txna ApplicationArgs 1
+    // smart_contracts/gas_station/contract.algo.ts:116
+    // @arc4.abimethod({ readonly: true })
+    callsub getFunderBox
+    bytec_1 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+main_getFunderConfiguration_route@9:
+    // smart_contracts/gas_station/contract.algo.ts:106
+    // @arc4.abimethod({ readonly: true })
+    txn OnCompletion
+    !
+    assert // OnCompletion is not NoOp
+    txn ApplicationID
+    assert // can only call when not creating
+    // smart_contracts/gas_station/contract.algo.ts:24
+    // export class GasStation extends Contract {
+    txna ApplicationArgs 1
+    // smart_contracts/gas_station/contract.algo.ts:106
+    // @arc4.abimethod({ readonly: true })
+    callsub getFunderConfiguration
+    dup
+    len
+    itob
+    extract 6 2
+    swap
+    concat
+    bytec_1 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+main_getFunderBalance_route@8:
+    // smart_contracts/gas_station/contract.algo.ts:97
+    // @arc4.abimethod({ readonly: true })
+    txn OnCompletion
+    !
+    assert // OnCompletion is not NoOp
+    txn ApplicationID
+    assert // can only call when not creating
+    // smart_contracts/gas_station/contract.algo.ts:24
+    // export class GasStation extends Contract {
+    txna ApplicationArgs 1
+    // smart_contracts/gas_station/contract.algo.ts:97
+    // @arc4.abimethod({ readonly: true })
+    callsub getFunderBalance
+    bytec_1 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
 main_setSuspended_route@7:
-    // smart_contracts/gas_station/contract.algo.ts:85
+    // smart_contracts/gas_station/contract.algo.ts:87
     // @arc4.abimethod()
     txn OnCompletion
     !
     assert // OnCompletion is not NoOp
     txn ApplicationID
     assert // can only call when not creating
-    // smart_contracts/gas_station/contract.algo.ts:23
+    // smart_contracts/gas_station/contract.algo.ts:24
     // export class GasStation extends Contract {
     txna ApplicationArgs 1
     intc_0 // 0
     getbit
-    // smart_contracts/gas_station/contract.algo.ts:85
+    // smart_contracts/gas_station/contract.algo.ts:87
     // @arc4.abimethod()
     callsub setSuspended
     intc_1 // 1
     return
 
 main_setAddressExecutive_route@6:
-    // smart_contracts/gas_station/contract.algo.ts:74
+    // smart_contracts/gas_station/contract.algo.ts:76
     // @arc4.abimethod()
     txn OnCompletion
     !
     assert // OnCompletion is not NoOp
     txn ApplicationID
     assert // can only call when not creating
-    // smart_contracts/gas_station/contract.algo.ts:23
+    // smart_contracts/gas_station/contract.algo.ts:24
     // export class GasStation extends Contract {
     txna ApplicationArgs 1
-    // smart_contracts/gas_station/contract.algo.ts:74
+    // smart_contracts/gas_station/contract.algo.ts:76
     // @arc4.abimethod()
     callsub setAddressExecutive
     intc_1 // 1
     return
 
 main_updateApplication_route@5:
-    // smart_contracts/gas_station/contract.algo.ts:59
+    // smart_contracts/gas_station/contract.algo.ts:61
     // @arc4.abimethod({ allowActions: 'UpdateApplication' })
     txn OnCompletion
     pushint 4 // UpdateApplication
@@ -250,29 +323,29 @@ main_updateApplication_route@5:
     assert // OnCompletion is not UpdateApplication
     txn ApplicationID
     assert // can only call when not creating
-    // smart_contracts/gas_station/contract.algo.ts:23
+    // smart_contracts/gas_station/contract.algo.ts:24
     // export class GasStation extends Contract {
     txna ApplicationArgs 1
     extract 2 0
-    // smart_contracts/gas_station/contract.algo.ts:59
+    // smart_contracts/gas_station/contract.algo.ts:61
     // @arc4.abimethod({ allowActions: 'UpdateApplication' })
     callsub updateApplication
     pushbytes 0x00
     intc_0 // 0
     uncover 2
     setbit
-    bytec_3 // 0x151f7c75
+    bytec_1 // 0x151f7c75
     swap
     concat
     log
     intc_1 // 1
     return
 
-main_bare_routing@15:
-    // smart_contracts/gas_station/contract.algo.ts:23
+main_bare_routing@18:
+    // smart_contracts/gas_station/contract.algo.ts:24
     // export class GasStation extends Contract {
     txn OnCompletion
-    bnz main_after_if_else@19
+    bnz main_after_if_else@22
     txn ApplicationID
     !
     assert // can only call when creating
@@ -282,34 +355,34 @@ main_bare_routing@15:
 
 // smart_contracts/gas_station/contract.algo.ts::GasStation.updateApplication(newVersion: bytes) -> uint64:
 updateApplication:
-    // smart_contracts/gas_station/contract.algo.ts:59-60
+    // smart_contracts/gas_station/contract.algo.ts:61-62
     // @arc4.abimethod({ allowActions: 'UpdateApplication' })
     // updateApplication(newVersion: string): boolean {
     proto 1 1
-    // smart_contracts/gas_station/contract.algo.ts:30
+    // smart_contracts/gas_station/contract.algo.ts:31
     // addressUdpater = GlobalState<Address>({ key: 'u' })
     intc_0 // 0
-    bytec_1 // "u"
+    bytec_3 // "u"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:62
+    // smart_contracts/gas_station/contract.algo.ts:64
     // this.addressUdpater.value === new Address(Txn.sender),
     txn Sender
     ==
-    // smart_contracts/gas_station/contract.algo.ts:61-64
+    // smart_contracts/gas_station/contract.algo.ts:63-66
     // assert(
     //   this.addressUdpater.value === new Address(Txn.sender),
     //   'Only addressUdpater setup in the config can update application',
     // )
     assert // Only addressUdpater setup in the config can update application
-    // smart_contracts/gas_station/contract.algo.ts:38
+    // smart_contracts/gas_station/contract.algo.ts:39
     // version = GlobalState<string>({ key: 'scver' })
     bytec 6 // "scver"
-    // smart_contracts/gas_station/contract.algo.ts:65
+    // smart_contracts/gas_station/contract.algo.ts:67
     // this.version.value = newVersion
     frame_dig -1
     app_global_put
-    // smart_contracts/gas_station/contract.algo.ts:66
+    // smart_contracts/gas_station/contract.algo.ts:68
     // return true
     intc_1 // 1
     retsub
@@ -317,25 +390,25 @@ updateApplication:
 
 // smart_contracts/gas_station/contract.algo.ts::GasStation.setAddressExecutive(a: bytes) -> void:
 setAddressExecutive:
-    // smart_contracts/gas_station/contract.algo.ts:74-75
+    // smart_contracts/gas_station/contract.algo.ts:76-77
     // @arc4.abimethod()
     // setAddressExecutive(a: Address) {
     proto 1 0
-    // smart_contracts/gas_station/contract.algo.ts:30
+    // smart_contracts/gas_station/contract.algo.ts:31
     // addressUdpater = GlobalState<Address>({ key: 'u' })
     intc_0 // 0
-    bytec_1 // "u"
+    bytec_3 // "u"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:76
+    // smart_contracts/gas_station/contract.algo.ts:78
     // assert(this.addressUdpater.value === new Address(Txn.sender), 'Only updater can change addressExecutive')
     txn Sender
     ==
     assert // Only updater can change addressExecutive
-    // smart_contracts/gas_station/contract.algo.ts:34
+    // smart_contracts/gas_station/contract.algo.ts:35
     // addressExecutive = GlobalState<Address>({ key: 'e' })
-    bytec 4 // "e"
-    // smart_contracts/gas_station/contract.algo.ts:77
+    bytec 5 // "e"
+    // smart_contracts/gas_station/contract.algo.ts:79
     // this.addressExecutive.value = a
     frame_dig -1
     app_global_put
@@ -344,98 +417,173 @@ setAddressExecutive:
 
 // smart_contracts/gas_station/contract.algo.ts::GasStation.setSuspended(isSuspended: uint64) -> void:
 setSuspended:
-    // smart_contracts/gas_station/contract.algo.ts:85-86
+    // smart_contracts/gas_station/contract.algo.ts:87-88
     // @arc4.abimethod()
     // setSuspended(isSuspended: boolean) {
     proto 1 0
-    // smart_contracts/gas_station/contract.algo.ts:30
+    // smart_contracts/gas_station/contract.algo.ts:31
     // addressUdpater = GlobalState<Address>({ key: 'u' })
     intc_0 // 0
-    bytec_1 // "u"
+    bytec_3 // "u"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:87
+    // smart_contracts/gas_station/contract.algo.ts:89
     // assert(this.addressUdpater.value === new Address(Txn.sender), 'Only updater can change addressExecutive')
     txn Sender
     ==
     assert // Only updater can change addressExecutive
-    // smart_contracts/gas_station/contract.algo.ts:44
+    // smart_contracts/gas_station/contract.algo.ts:45
     // suspended = GlobalState<boolean>({ key: 's' })
     bytec_0 // "s"
-    // smart_contracts/gas_station/contract.algo.ts:88
+    // smart_contracts/gas_station/contract.algo.ts:90
     // this.suspended.value = isSuspended
     frame_dig -1
     app_global_put
     retsub
 
 
+// smart_contracts/gas_station/contract.algo.ts::GasStation.getFunderBalance(funder: bytes) -> bytes:
+getFunderBalance:
+    // smart_contracts/gas_station/contract.algo.ts:97-98
+    // @arc4.abimethod({ readonly: true })
+    // getFunderBalance(funder: Address): UintN64 {
+    proto 1 1
+    // smart_contracts/gas_station/contract.algo.ts:25
+    // public configuration = BoxMap<Address, UserStruct>({ keyPrefix: 'c' })
+    bytec_2 // "c"
+    frame_dig -1
+    concat
+    // smart_contracts/gas_station/contract.algo.ts:99
+    // return this.configuration(funder).value.balance
+    box_get
+    assert // Box must have value
+    extract 0 8 // on error: Index access is out of bounds
+    retsub
+
+
+// smart_contracts/gas_station/contract.algo.ts::GasStation.getFunderConfiguration(funder: bytes) -> bytes:
+getFunderConfiguration:
+    // smart_contracts/gas_station/contract.algo.ts:106-107
+    // @arc4.abimethod({ readonly: true })
+    // getFunderConfiguration(funder: Address): string {
+    proto 1 1
+    // smart_contracts/gas_station/contract.algo.ts:25
+    // public configuration = BoxMap<Address, UserStruct>({ keyPrefix: 'c' })
+    bytec_2 // "c"
+    frame_dig -1
+    concat
+    // smart_contracts/gas_station/contract.algo.ts:108
+    // return this.configuration(funder).value.configuration.native
+    box_get
+    assert // Box must have value
+    dup
+    intc_2 // 8
+    extract_uint16
+    dig 1
+    len
+    substring3
+    extract 2 0
+    retsub
+
+
+// smart_contracts/gas_station/contract.algo.ts::GasStation.getFunderBox(funder: bytes) -> bytes:
+getFunderBox:
+    // smart_contracts/gas_station/contract.algo.ts:116-117
+    // @arc4.abimethod({ readonly: true })
+    // getFunderBox(funder: Address): UserStruct {
+    proto 1 1
+    // smart_contracts/gas_station/contract.algo.ts:25
+    // public configuration = BoxMap<Address, UserStruct>({ keyPrefix: 'c' })
+    bytec_2 // "c"
+    frame_dig -1
+    concat
+    // smart_contracts/gas_station/contract.algo.ts:118
+    // return this.configuration(funder).value
+    box_get
+    assert // Box must have value
+    retsub
+
+
 // smart_contracts/gas_station/contract.algo.ts::GasStation.depositWithConfiguration(txnDeposit: uint64, configuration: bytes) -> void:
 depositWithConfiguration:
-    // smart_contracts/gas_station/contract.algo.ts:98-99
+    // smart_contracts/gas_station/contract.algo.ts:128-129
     // @arc4.abimethod()
-    // public depositWithConfiguration(txnDeposit: gtxn.PaymentTxn, configuration: Str): void {
+    // public depositWithConfiguration(txnDeposit: gtxn.PaymentTxn, configuration: arc4.Str): void {
     proto 2 0
-    // smart_contracts/gas_station/contract.algo.ts:44
+    // smart_contracts/gas_station/contract.algo.ts:45
     // suspended = GlobalState<boolean>({ key: 's' })
     intc_0 // 0
     bytec_0 // "s"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:100
+    // smart_contracts/gas_station/contract.algo.ts:130
     // assert(!this.suspended.value, 'The smart contract is suspended at the moment')
     !
     assert // The smart contract is suspended at the moment
-    // smart_contracts/gas_station/contract.algo.ts:101
+    // smart_contracts/gas_station/contract.algo.ts:131
+    // assert(op.len(Bytes(configuration.native)) > 0, 'Configuration must be defined')
+    frame_dig -1
+    extract 2 0
+    dup
+    len
+    assert // Configuration must be defined
+    // smart_contracts/gas_station/contract.algo.ts:132
+    // assert(op.substring(Bytes(configuration.native), 0, 1).toString() === '{', 'Invalid configuration provided')
+    substring 0 1
+    pushbytes "{"
+    ==
+    assert // Invalid configuration provided
+    // smart_contracts/gas_station/contract.algo.ts:133
     // var sender = new arc4.Address(txnDeposit.sender)
     frame_dig -2
     gtxns Sender
-    // smart_contracts/gas_station/contract.algo.ts:102
+    // smart_contracts/gas_station/contract.algo.ts:134
     // const fee: uint64 = txnDeposit.amount / 20 //5%
     frame_dig -2
     gtxns Amount
     dup
-    intc_2 // 20
+    intc_3 // 20
     /
-    // smart_contracts/gas_station/contract.algo.ts:103
+    // smart_contracts/gas_station/contract.algo.ts:135
     // const deposit: uint64 = txnDeposit.amount - fee
     -
     dup
     cover 2
-    // smart_contracts/gas_station/contract.algo.ts:25
+    // smart_contracts/gas_station/contract.algo.ts:26
     // public allDeposits = GlobalState<uint64>() // difference between this value and real value is the protocol fee accumulation
     intc_0 // 0
-    bytec_2 // "allDeposits"
+    bytec 4 // "allDeposits"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:105
+    // smart_contracts/gas_station/contract.algo.ts:137
     // this.allDeposits.value += deposit
     +
-    // smart_contracts/gas_station/contract.algo.ts:25
+    // smart_contracts/gas_station/contract.algo.ts:26
     // public allDeposits = GlobalState<uint64>() // difference between this value and real value is the protocol fee accumulation
-    bytec_2 // "allDeposits"
-    // smart_contracts/gas_station/contract.algo.ts:105
+    bytec 4 // "allDeposits"
+    // smart_contracts/gas_station/contract.algo.ts:137
     // this.allDeposits.value += deposit
     swap
     app_global_put
-    // smart_contracts/gas_station/contract.algo.ts:107
+    // smart_contracts/gas_station/contract.algo.ts:139
     // assert(txnDeposit.receiver === Global.currentApplicationAddress, 'Receiver must be the gas station app')
     frame_dig -2
     gtxns Receiver
     global CurrentApplicationAddress
     ==
     assert // Receiver must be the gas station app
-    // smart_contracts/gas_station/contract.algo.ts:24
+    // smart_contracts/gas_station/contract.algo.ts:25
     // public configuration = BoxMap<Address, UserStruct>({ keyPrefix: 'c' })
-    bytec 5 // "c"
+    bytec_2 // "c"
     swap
     concat
     dup
-    // smart_contracts/gas_station/contract.algo.ts:109
+    // smart_contracts/gas_station/contract.algo.ts:141
     // if (this.configuration(sender).exists) {
     box_len
     bury 1
     bz depositWithConfiguration_else_body@2
-    // smart_contracts/gas_station/contract.algo.ts:110
+    // smart_contracts/gas_station/contract.algo.ts:142
     // this.configuration(sender).value.balance = new UintN64(deposit + this.configuration(sender).value.balance.native)
     dup
     box_get
@@ -456,13 +604,13 @@ depositWithConfiguration:
     dig 1
     swap
     box_put
-    // smart_contracts/gas_station/contract.algo.ts:111
+    // smart_contracts/gas_station/contract.algo.ts:143
     // this.configuration(sender).value.configuration = configuration
     dup
     box_get
     assert // Box must have value
     dup
-    pushint 8 // 8
+    intc_2 // 8
     extract_uint16
     intc_0 // 0
     swap
@@ -476,11 +624,11 @@ depositWithConfiguration:
     retsub
 
 depositWithConfiguration_else_body@2:
-    // smart_contracts/gas_station/contract.algo.ts:114
+    // smart_contracts/gas_station/contract.algo.ts:146
     // balance: new UintN64(deposit),
     frame_dig 0
     itob
-    // smart_contracts/gas_station/contract.algo.ts:113-116
+    // smart_contracts/gas_station/contract.algo.ts:145-148
     // const newValue = new UserStruct({
     //   balance: new UintN64(deposit),
     //   configuration: configuration,
@@ -489,7 +637,7 @@ depositWithConfiguration_else_body@2:
     concat
     frame_dig -1
     concat
-    // smart_contracts/gas_station/contract.algo.ts:117
+    // smart_contracts/gas_station/contract.algo.ts:149
     // this.configuration(sender).value = newValue.copy()
     swap
     dup
@@ -502,70 +650,70 @@ depositWithConfiguration_else_body@2:
 
 // smart_contracts/gas_station/contract.algo.ts::GasStation.deposit(txnDeposit: uint64) -> void:
 deposit:
-    // smart_contracts/gas_station/contract.algo.ts:127-128
+    // smart_contracts/gas_station/contract.algo.ts:159-160
     // @arc4.abimethod()
     // public deposit(txnDeposit: gtxn.PaymentTxn): void {
     proto 1 0
-    // smart_contracts/gas_station/contract.algo.ts:44
+    // smart_contracts/gas_station/contract.algo.ts:45
     // suspended = GlobalState<boolean>({ key: 's' })
     intc_0 // 0
     bytec_0 // "s"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:129
+    // smart_contracts/gas_station/contract.algo.ts:161
     // assert(!this.suspended.value, 'The smart contract is suspended at the moment')
     !
     assert // The smart contract is suspended at the moment
-    // smart_contracts/gas_station/contract.algo.ts:130
+    // smart_contracts/gas_station/contract.algo.ts:162
     // var sender = new arc4.Address(txnDeposit.sender)
     frame_dig -1
     gtxns Sender
-    // smart_contracts/gas_station/contract.algo.ts:131
+    // smart_contracts/gas_station/contract.algo.ts:163
     // const fee: uint64 = txnDeposit.amount / 20 //5%
     frame_dig -1
     gtxns Amount
     dup
-    intc_2 // 20
+    intc_3 // 20
     /
-    // smart_contracts/gas_station/contract.algo.ts:132
+    // smart_contracts/gas_station/contract.algo.ts:164
     // const deposit: uint64 = txnDeposit.amount - fee
     -
-    // smart_contracts/gas_station/contract.algo.ts:25
+    // smart_contracts/gas_station/contract.algo.ts:26
     // public allDeposits = GlobalState<uint64>() // difference between this value and real value is the protocol fee accumulation
     intc_0 // 0
-    bytec_2 // "allDeposits"
+    bytec 4 // "allDeposits"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:134
+    // smart_contracts/gas_station/contract.algo.ts:166
     // this.allDeposits.value += deposit
     dig 1
     +
-    // smart_contracts/gas_station/contract.algo.ts:25
+    // smart_contracts/gas_station/contract.algo.ts:26
     // public allDeposits = GlobalState<uint64>() // difference between this value and real value is the protocol fee accumulation
-    bytec_2 // "allDeposits"
-    // smart_contracts/gas_station/contract.algo.ts:134
+    bytec 4 // "allDeposits"
+    // smart_contracts/gas_station/contract.algo.ts:166
     // this.allDeposits.value += deposit
     swap
     app_global_put
-    // smart_contracts/gas_station/contract.algo.ts:136
+    // smart_contracts/gas_station/contract.algo.ts:168
     // assert(txnDeposit.receiver === Global.currentApplicationAddress, 'Receiver must be the gas station app')
     frame_dig -1
     gtxns Receiver
     global CurrentApplicationAddress
     ==
     assert // Receiver must be the gas station app
-    // smart_contracts/gas_station/contract.algo.ts:24
+    // smart_contracts/gas_station/contract.algo.ts:25
     // public configuration = BoxMap<Address, UserStruct>({ keyPrefix: 'c' })
-    bytec 5 // "c"
+    bytec_2 // "c"
     uncover 2
     concat
-    // smart_contracts/gas_station/contract.algo.ts:138
+    // smart_contracts/gas_station/contract.algo.ts:170
     // assert(this.configuration(sender).exists, 'Funder must set configuration first')
     dup
     box_len
     bury 1
     assert // Funder must set configuration first
-    // smart_contracts/gas_station/contract.algo.ts:140
+    // smart_contracts/gas_station/contract.algo.ts:172
     // this.configuration(sender).value.balance = new UintN64(deposit + this.configuration(sender).value.balance.native)
     dup
     box_get
@@ -589,59 +737,61 @@ deposit:
 
 // smart_contracts/gas_station/contract.algo.ts::GasStation.fundAccount(amount: uint64, receiver: bytes, note: bytes, funder: bytes) -> bytes:
 fundAccount:
-    // smart_contracts/gas_station/contract.algo.ts:151-152
+    // smart_contracts/gas_station/contract.algo.ts:183-184
     // @arc4.abimethod()
-    // public fundAccount(amount: uint64, receiver: Account, note: string, funder: Address): bytes {
+    // public fundAccount(amount: uint64, receiver: Address, note: string, funder: Address): bytes {
     proto 4 1
-    // smart_contracts/gas_station/contract.algo.ts:44
+    // smart_contracts/gas_station/contract.algo.ts:45
     // suspended = GlobalState<boolean>({ key: 's' })
     intc_0 // 0
     bytec_0 // "s"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:153
+    // smart_contracts/gas_station/contract.algo.ts:185
     // assert(!this.suspended.value, 'The smart contract is suspended at the moment')
     !
     assert // The smart contract is suspended at the moment
-    // smart_contracts/gas_station/contract.algo.ts:34
+    // smart_contracts/gas_station/contract.algo.ts:35
     // addressExecutive = GlobalState<Address>({ key: 'e' })
     intc_0 // 0
-    bytec 4 // "e"
+    bytec 5 // "e"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:154
+    // smart_contracts/gas_station/contract.algo.ts:186
     // assert(this.addressExecutive.value === new Address(Txn.sender), 'Only executor can use this method')
     txn Sender
     ==
     assert // Only executor can use this method
-    // smart_contracts/gas_station/contract.algo.ts:24
+    // smart_contracts/gas_station/contract.algo.ts:25
     // public configuration = BoxMap<Address, UserStruct>({ keyPrefix: 'c' })
-    bytec 5 // "c"
+    bytec_2 // "c"
     frame_dig -1
     concat
-    // smart_contracts/gas_station/contract.algo.ts:155
+    // smart_contracts/gas_station/contract.algo.ts:187
     // assert(this.configuration(funder).exists, 'Funder box does not exists')
     dup
     box_len
     bury 1
     assert // Funder box does not exists
-    // smart_contracts/gas_station/contract.algo.ts:156
-    // assert(this.configuration(funder).value.balance.native < amount + 2000, 'Funder is out of the deposit')
+    // smart_contracts/gas_station/contract.algo.ts:188
+    // const balance = this.configuration(funder).value.balance.native
     dup
     box_get
     assert // Box must have value
     intc_0 // 0
     extract_uint64
+    // smart_contracts/gas_station/contract.algo.ts:191
+    // assert(balance > amount + 2000, 'Funder is out of the deposit')
     frame_dig -4
     pushint 2000 // 2000
     +
-    <
+    >
     assert // Funder is out of the deposit
-    // smart_contracts/gas_station/contract.algo.ts:160-166
+    // smart_contracts/gas_station/contract.algo.ts:195-201
     // const itxnResult = itxn
     //   .payment({
     //     amount: amount,
-    //     receiver: receiver,
+    //     receiver: receiver.native,
     //     note: note,
     //   })
     //   .submit()
@@ -652,29 +802,29 @@ fundAccount:
     itxn_field Receiver
     frame_dig -4
     itxn_field Amount
-    // smart_contracts/gas_station/contract.algo.ts:160-165
+    // smart_contracts/gas_station/contract.algo.ts:195-200
     // const itxnResult = itxn
     //   .payment({
     //     amount: amount,
-    //     receiver: receiver,
+    //     receiver: receiver.native,
     //     note: note,
     //   })
     intc_1 // 1
     itxn_field TypeEnum
     intc_0 // 0
     itxn_field Fee
-    // smart_contracts/gas_station/contract.algo.ts:160-166
+    // smart_contracts/gas_station/contract.algo.ts:195-201
     // const itxnResult = itxn
     //   .payment({
     //     amount: amount,
-    //     receiver: receiver,
+    //     receiver: receiver.native,
     //     note: note,
     //   })
     //   .submit()
     itxn_submit
     itxn Fee
     itxn TxID
-    // smart_contracts/gas_station/contract.algo.ts:170
+    // smart_contracts/gas_station/contract.algo.ts:205
     // this.configuration(funder).value.balance.native - amount - itxnResult.fee * 2,
     dig 2
     box_get
@@ -684,20 +834,20 @@ fundAccount:
     frame_dig -4
     -
     uncover 2
-    intc_3 // 2
+    pushint 2 // 2
     *
     -
-    // smart_contracts/gas_station/contract.algo.ts:169-171
+    // smart_contracts/gas_station/contract.algo.ts:204-206
     // this.configuration(funder).value.balance = new UintN64(
     //   this.configuration(funder).value.balance.native - amount - itxnResult.fee * 2,
     // )
     itob
-    // smart_contracts/gas_station/contract.algo.ts:169
+    // smart_contracts/gas_station/contract.algo.ts:204
     // this.configuration(funder).value.balance = new UintN64(
     dig 2
     box_get
     assert // Box must have value
-    // smart_contracts/gas_station/contract.algo.ts:169-171
+    // smart_contracts/gas_station/contract.algo.ts:204-206
     // this.configuration(funder).value.balance = new UintN64(
     //   this.configuration(funder).value.balance.native - amount - itxnResult.fee * 2,
     // )
@@ -709,97 +859,193 @@ fundAccount:
     uncover 2
     swap
     box_put
-    // smart_contracts/gas_station/contract.algo.ts:173
+    // smart_contracts/gas_station/contract.algo.ts:208
     // return itxnResult.txnId
     retsub
 
 
-// smart_contracts/gas_station/contract.algo.ts::GasStation.withdraw(receiver: bytes) -> bytes:
+// smart_contracts/gas_station/contract.algo.ts::GasStation.withdraw(receiver: bytes, amount: bytes) -> bytes:
 withdraw:
-    // smart_contracts/gas_station/contract.algo.ts:183-184
+    // smart_contracts/gas_station/contract.algo.ts:218-219
     // @arc4.abimethod()
-    // public withdraw(receiver: Account): bytes {
-    proto 1 1
-    // smart_contracts/gas_station/contract.algo.ts:44
+    // public withdraw(receiver: Address, amount: UintN64): bytes {
+    proto 2 1
+    // smart_contracts/gas_station/contract.algo.ts:45
     // suspended = GlobalState<boolean>({ key: 's' })
     intc_0 // 0
     bytec_0 // "s"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:185
+    // smart_contracts/gas_station/contract.algo.ts:220
     // assert(!this.suspended.value, 'The smart contract is suspended at the moment')
     !
     assert // The smart contract is suspended at the moment
-    // smart_contracts/gas_station/contract.algo.ts:30
+    // smart_contracts/gas_station/contract.algo.ts:25
+    // public configuration = BoxMap<Address, UserStruct>({ keyPrefix: 'c' })
+    bytec_2 // "c"
+    frame_dig -2
+    concat
+    dup
+    // smart_contracts/gas_station/contract.algo.ts:222
+    // if (this.configuration(receiver).exists) {
+    box_len
+    bury 1
+    bz withdraw_else_body@3
+    // smart_contracts/gas_station/contract.algo.ts:224
+    // var excessBalance: uint64 = this.configuration(receiver).value.balance.native
+    frame_dig 0
+    dup
+    box_get
+    assert // Box must have value
+    intc_0 // 0
+    extract_uint64
+    // smart_contracts/gas_station/contract.algo.ts:225
+    // assert(amount.native <= excessBalance, 'The withdrawal amount cannot be maximum your deposit')
+    frame_dig -1
+    btoi
+    dup
+    dig 2
+    <=
+    assert // The withdrawal amount cannot be maximum your deposit
+    // smart_contracts/gas_station/contract.algo.ts:227
+    // this.configuration(receiver).value.balance = new UintN64(excessBalance - amount.native)
+    swap
+    dig 1
+    -
+    itob
+    dig 2
+    box_get
+    assert // Box must have value
+    swap
+    replace2 0
+    dig 2
+    box_del
+    pop
+    uncover 2
+    swap
+    box_put
+    // smart_contracts/gas_station/contract.algo.ts:229-235
+    // const itxnResult = itxn
+    //   .payment({
+    //     amount: amount.native,
+    //     receiver: receiver.native,
+    //     note: 'user withdrawal',
+    //   })
+    //   .submit()
+    itxn_begin
+    // smart_contracts/gas_station/contract.algo.ts:233
+    // note: 'user withdrawal',
+    pushbytes "user withdrawal"
+    itxn_field Note
+    frame_dig -2
+    itxn_field Receiver
+    itxn_field Amount
+    // smart_contracts/gas_station/contract.algo.ts:229-234
+    // const itxnResult = itxn
+    //   .payment({
+    //     amount: amount.native,
+    //     receiver: receiver.native,
+    //     note: 'user withdrawal',
+    //   })
+    intc_1 // 1
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    // smart_contracts/gas_station/contract.algo.ts:229-235
+    // const itxnResult = itxn
+    //   .payment({
+    //     amount: amount.native,
+    //     receiver: receiver.native,
+    //     note: 'user withdrawal',
+    //   })
+    //   .submit()
+    itxn_submit
+    itxn TxID
+    // smart_contracts/gas_station/contract.algo.ts:237
+    // return itxnResult.txnId
+    swap
+    retsub
+
+withdraw_else_body@3:
+    // smart_contracts/gas_station/contract.algo.ts:31
     // addressUdpater = GlobalState<Address>({ key: 'u' })
     intc_0 // 0
-    bytec_1 // "u"
+    bytec_3 // "u"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:186
+    // smart_contracts/gas_station/contract.algo.ts:240
     // assert(this.addressUdpater.value === new Address(Txn.sender), 'Only updater can use this method')
     txn Sender
     ==
     assert // Only updater can use this method
-    // smart_contracts/gas_station/contract.algo.ts:188
+    // smart_contracts/gas_station/contract.algo.ts:241
     // var excessBalance: uint64 = Global.currentApplicationAddress.balance - this.allDeposits.value
     global CurrentApplicationAddress
     acct_params_get AcctBalance
     assert // account funded
-    // smart_contracts/gas_station/contract.algo.ts:25
+    // smart_contracts/gas_station/contract.algo.ts:26
     // public allDeposits = GlobalState<uint64>() // difference between this value and real value is the protocol fee accumulation
     intc_0 // 0
-    bytec_2 // "allDeposits"
+    bytec 4 // "allDeposits"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:188
+    // smart_contracts/gas_station/contract.algo.ts:241
     // var excessBalance: uint64 = Global.currentApplicationAddress.balance - this.allDeposits.value
     -
-    // smart_contracts/gas_station/contract.algo.ts:190-196
+    // smart_contracts/gas_station/contract.algo.ts:242
+    // assert(amount.native <= excessBalance, 'Withdrawal amount cannot be higher then collected fees')
+    frame_dig -1
+    btoi
+    dup
+    uncover 2
+    <=
+    assert // Withdrawal amount cannot be higher then collected fees
+    // smart_contracts/gas_station/contract.algo.ts:243-249
     // const itxnResult = itxn
     //   .payment({
-    //     amount: excessBalance,
-    //     receiver: receiver,
+    //     amount: amount.native,
+    //     receiver: receiver.native,
     //     note: 'service fee withdrawal',
     //   })
     //   .submit()
     itxn_begin
-    // smart_contracts/gas_station/contract.algo.ts:194
+    // smart_contracts/gas_station/contract.algo.ts:247
     // note: 'service fee withdrawal',
     pushbytes "service fee withdrawal"
     itxn_field Note
-    frame_dig -1
+    frame_dig -2
     itxn_field Receiver
     itxn_field Amount
-    // smart_contracts/gas_station/contract.algo.ts:190-195
+    // smart_contracts/gas_station/contract.algo.ts:243-248
     // const itxnResult = itxn
     //   .payment({
-    //     amount: excessBalance,
-    //     receiver: receiver,
+    //     amount: amount.native,
+    //     receiver: receiver.native,
     //     note: 'service fee withdrawal',
     //   })
     intc_1 // 1
     itxn_field TypeEnum
     intc_0 // 0
     itxn_field Fee
-    // smart_contracts/gas_station/contract.algo.ts:190-196
+    // smart_contracts/gas_station/contract.algo.ts:243-249
     // const itxnResult = itxn
     //   .payment({
-    //     amount: excessBalance,
-    //     receiver: receiver,
+    //     amount: amount.native,
+    //     receiver: receiver.native,
     //     note: 'service fee withdrawal',
     //   })
     //   .submit()
     itxn_submit
     itxn TxID
-    // smart_contracts/gas_station/contract.algo.ts:197
+    // smart_contracts/gas_station/contract.algo.ts:250
     // return itxnResult.txnId
+    swap
     retsub
 
 
 // smart_contracts/gas_station/contract.algo.ts::GasStation.sendOnlineKeyRegistration(voteKey: bytes, selectionKey: bytes, stateProofKey: bytes, voteFirst: uint64, voteLast: uint64, voteKeyDilution: uint64, fee: uint64) -> bytes:
 sendOnlineKeyRegistration:
-    // smart_contracts/gas_station/contract.algo.ts:203-212
+    // smart_contracts/gas_station/contract.algo.ts:257-266
     // @arc4.abimethod()
     // public sendOnlineKeyRegistration(
     //   voteKey: bytes,
@@ -811,28 +1057,28 @@ sendOnlineKeyRegistration:
     //   fee: uint64,
     // ): bytes {
     proto 7 1
-    // smart_contracts/gas_station/contract.algo.ts:44
+    // smart_contracts/gas_station/contract.algo.ts:45
     // suspended = GlobalState<boolean>({ key: 's' })
     intc_0 // 0
     bytec_0 // "s"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:213
+    // smart_contracts/gas_station/contract.algo.ts:267
     // assert(!this.suspended.value, 'The smart contract is suspended at the moment')
     !
     assert // The smart contract is suspended at the moment
-    // smart_contracts/gas_station/contract.algo.ts:30
+    // smart_contracts/gas_station/contract.algo.ts:31
     // addressUdpater = GlobalState<Address>({ key: 'u' })
     intc_0 // 0
-    bytec_1 // "u"
+    bytec_3 // "u"
     app_global_get_ex
     assert // check GlobalState exists
-    // smart_contracts/gas_station/contract.algo.ts:214
+    // smart_contracts/gas_station/contract.algo.ts:268
     // assert(this.addressUdpater.value === new Address(Txn.sender), 'Only updater can use this method')
     txn Sender
     ==
     assert // Only updater can use this method
-    // smart_contracts/gas_station/contract.algo.ts:215-225
+    // smart_contracts/gas_station/contract.algo.ts:269-279
     // const itxnResult = itxn
     //   .keyRegistration({
     //     selectionKey: selectionKey,
@@ -857,7 +1103,7 @@ sendOnlineKeyRegistration:
     itxn_field StateProofPK
     frame_dig -6
     itxn_field SelectionPK
-    // smart_contracts/gas_station/contract.algo.ts:215-224
+    // smart_contracts/gas_station/contract.algo.ts:269-278
     // const itxnResult = itxn
     //   .keyRegistration({
     //     selectionKey: selectionKey,
@@ -868,11 +1114,11 @@ sendOnlineKeyRegistration:
     //     voteKey: voteKey,
     //     fee: fee,
     //   })
-    intc_3 // 2
+    pushint 2 // 2
     itxn_field TypeEnum
     frame_dig -1
     itxn_field Fee
-    // smart_contracts/gas_station/contract.algo.ts:215-225
+    // smart_contracts/gas_station/contract.algo.ts:269-279
     // const itxnResult = itxn
     //   .keyRegistration({
     //     selectionKey: selectionKey,
@@ -886,6 +1132,6 @@ sendOnlineKeyRegistration:
     //   .submit()
     itxn_submit
     itxn TxID
-    // smart_contracts/gas_station/contract.algo.ts:226
+    // smart_contracts/gas_station/contract.algo.ts:280
     // return itxnResult.txnId
     retsub

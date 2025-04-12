@@ -1,18 +1,19 @@
 import {
-  Account,
   arc4,
   assert,
   BoxMap,
+  Bytes,
   bytes,
   Contract,
   Global,
   GlobalState,
   gtxn,
   itxn,
+  op,
   Txn,
   uint64,
 } from '@algorandfoundation/algorand-typescript'
-import { Address, Str, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
+import { Address, UintN64 } from '@algorandfoundation/algorand-typescript/arc4'
 
 class UserStruct extends arc4.Struct<{
   balance: UintN64
@@ -51,6 +52,7 @@ export class GasStation extends Contract {
     this.version.value = version
     this.addressExecutive.value = new Address(Txn.sender)
     this.suspended.value = false
+    this.allDeposits.value = 0
   }
 
   /**
@@ -87,6 +89,34 @@ export class GasStation extends Contract {
     assert(this.addressUdpater.value === new Address(Txn.sender), 'Only updater can change addressExecutive')
     this.suspended.value = isSuspended
   }
+  /**
+   * Readonly method to fetch easily funder's balance
+   *
+   * @param funder Funder's address
+   */
+  @arc4.abimethod({ readonly: true })
+  getFunderBalance(funder: Address): UintN64 {
+    return this.configuration(funder).value.balance
+  }
+  /**
+   * Readonly method to fetch easily funder's configuration
+   *
+   * @param funder Funder's address
+   */
+  @arc4.abimethod({ readonly: true })
+  getFunderConfiguration(funder: Address): string {
+    return this.configuration(funder).value.configuration.native
+  }
+
+  /**
+   * Readonly method to fetch easily funder's box
+   *
+   * @param funder Funder's address
+   */
+  @arc4.abimethod({ readonly: true })
+  getFunderBox(funder: Address): UserStruct {
+    return this.configuration(funder).value
+  }
 
   /**
    * Gas Funder can set configuration with the deposit tx
@@ -96,8 +126,10 @@ export class GasStation extends Contract {
    * @param configuration Configration to be stored into the box
    */
   @arc4.abimethod()
-  public depositWithConfiguration(txnDeposit: gtxn.PaymentTxn, configuration: Str): void {
+  public depositWithConfiguration(txnDeposit: gtxn.PaymentTxn, configuration: arc4.Str): void {
     assert(!this.suspended.value, 'The smart contract is suspended at the moment')
+    assert(op.len(Bytes(configuration.native)) > 0, 'Configuration must be defined')
+    assert(op.substring(Bytes(configuration.native), 0, 1).toString() === '{', 'Invalid configuration provided')
     var sender = new arc4.Address(txnDeposit.sender)
     const fee: uint64 = txnDeposit.amount / 20 //5%
     const deposit: uint64 = txnDeposit.amount - fee
@@ -149,18 +181,21 @@ export class GasStation extends Contract {
    * @returns
    */
   @arc4.abimethod()
-  public fundAccount(amount: uint64, receiver: Account, note: string, funder: Address): bytes {
+  public fundAccount(amount: uint64, receiver: Address, note: string, funder: Address): bytes {
     assert(!this.suspended.value, 'The smart contract is suspended at the moment')
     assert(this.addressExecutive.value === new Address(Txn.sender), 'Only executor can use this method')
     assert(this.configuration(funder).exists, 'Funder box does not exists')
-    assert(this.configuration(funder).value.balance.native < amount + 2000, 'Funder is out of the deposit')
+    const balance = this.configuration(funder).value.balance.native
+    // assert(balance > 100000, 'Funder balance must be above 100000')
+    // assert(amount < 100000, 'Amount must be below 100000')
+    assert(balance > amount + 2000, 'Funder is out of the deposit')
 
     // 2000 is constant the network fees
 
     const itxnResult = itxn
       .payment({
         amount: amount,
-        receiver: receiver,
+        receiver: receiver.native,
         note: note,
       })
       .submit()
@@ -181,20 +216,39 @@ export class GasStation extends Contract {
    * @returns
    */
   @arc4.abimethod()
-  public withdraw(receiver: Account): bytes {
+  public withdraw(receiver: Address, amount: UintN64): bytes {
     assert(!this.suspended.value, 'The smart contract is suspended at the moment')
-    assert(this.addressUdpater.value === new Address(Txn.sender), 'Only updater can use this method')
 
-    var excessBalance: uint64 = Global.currentApplicationAddress.balance - this.allDeposits.value
+    if (this.configuration(receiver).exists) {
+      // withdrawal of the funder funds
+      var excessBalance: uint64 = this.configuration(receiver).value.balance.native
+      assert(amount.native <= excessBalance, 'The withdrawal amount cannot be maximum your deposit')
+      // reduce the deposit in the box
+      this.configuration(receiver).value.balance = new UintN64(excessBalance - amount.native)
 
-    const itxnResult = itxn
-      .payment({
-        amount: excessBalance,
-        receiver: receiver,
-        note: 'service fee withdrawal',
-      })
-      .submit()
-    return itxnResult.txnId
+      const itxnResult = itxn
+        .payment({
+          amount: amount.native,
+          receiver: receiver.native,
+          note: 'user withdrawal',
+        })
+        .submit()
+
+      return itxnResult.txnId
+    } else {
+      // withdrawal of the protocol funds
+      assert(this.addressUdpater.value === new Address(Txn.sender), 'Only updater can use this method')
+      var excessBalance: uint64 = Global.currentApplicationAddress.balance - this.allDeposits.value
+      assert(amount.native <= excessBalance, 'Withdrawal amount cannot be higher then collected fees')
+      const itxnResult = itxn
+        .payment({
+          amount: amount.native,
+          receiver: receiver.native,
+          note: 'service fee withdrawal',
+        })
+        .submit()
+      return itxnResult.txnId
+    }
   }
 
   /**

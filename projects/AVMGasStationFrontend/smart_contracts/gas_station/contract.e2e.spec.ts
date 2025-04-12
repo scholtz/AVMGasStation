@@ -59,8 +59,9 @@ describe('GasStation contract', () => {
     const params = await algod.getTransactionParams().do()
 
     var box: BoxIdentifier = new Uint8Array(Buffer.concat([Buffer.from('c', 'ascii'), testAccount.publicKey]))
-
-    await client.send.deposit({
+    var data =
+      '{"Assets":[],"Apps":[],"Addresses":["RIOZSBBY6B7ODWUHT2PA5RNO723MC4UWBQ7OIF56CECON63CLNAFANTWFY"],"Version":1}'
+    await client.send.depositWithConfiguration({
       args: {
         txnDeposit: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
           amount: 1_000_000,
@@ -68,10 +69,29 @@ describe('GasStation contract', () => {
           sender: testAccount,
           suggestedParams: params,
         }),
+        configuration: data,
       },
       maxFee: AlgoAmount.MicroAlgo(2000),
       staticFee: AlgoAmount.MicroAlgo(2000),
       boxReferences: [box],
     })
+    var funderBalance = await client.getFunderBalance({
+      args: { funder: algosdk.encodeAddress(testAccount.addr.publicKey) },
+    })
+    expect(funderBalance).toBe(950_000n)
+    var funderConfig = await client.getFunderConfiguration({
+      args: { funder: algosdk.encodeAddress(testAccount.addr.publicKey) },
+    })
+    expect(funderConfig).toBe(data)
+    var funderBox = await client.getFunderBox({
+      args: { funder: algosdk.encodeAddress(testAccount.addr.publicKey) },
+    })
+    expect(funderBox.balance).toBe(950_000n)
+    expect(funderBox.configuration).toBe(data)
+
+    var boxData = await algod.getApplicationBoxByName(client.appId, box).do()
+    expect(Buffer.from(boxData.value).toString('hex')).toBe(
+      '00000000000e7ef0000a006e7b22417373657473223a5b5d2c2241707073223a5b5d2c22416464726573736573223a5b2252494f5a534242593642374f445755485432504135524e4f3732334d433455574251374f494635364345434f4e3633434c4e4146414e54574659225d2c2256657273696f6e223a317d',
+    )
   })
 })
