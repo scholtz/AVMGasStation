@@ -6,6 +6,9 @@
     },
     {
       "path": "projects/SmartContract"
+    },
+    {
+      "path": "projects/GasStationFE"
     }
   ],
   "settings": {
