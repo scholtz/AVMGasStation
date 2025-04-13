@@ -9,6 +9,9 @@
     },
     {
       "path": "projects/GasStationFE"
+    },
+    {
+      "path": "projects/GasStationAPI"
     }
   ],
   "settings": {
