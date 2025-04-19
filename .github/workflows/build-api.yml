@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths:
-      - 'AVMGasStation/projects/GasStationAPI/**'
+      - 'projects/GasStationAPI/**'
       
 jobs:
   build-and-deploy:
