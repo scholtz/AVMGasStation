@@ -1,10 +1,11 @@
-﻿namespace AVMGasStation.Model.GasConfiguration
+namespace AVMGasStation.Model.GasConfiguration
 {
     public class GasConfiguration
     {
-        /// <summary>
-        /// Version
-        /// </summary>
-        public int Version { get; set; } = 1;
+    /// <summary>
+    /// Version
+    /// </summary>
+    [Newtonsoft.Json.JsonProperty("version")]
+    public int Version { get; set; } = 1;
     }
 }

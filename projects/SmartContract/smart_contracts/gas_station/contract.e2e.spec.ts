@@ -1,12 +1,13 @@
+import { createGasStationConfigurationV1 } from '@/createGasStationConfigurationV1'
+import { getGasStationBoxUint8Array } from '@/getGasStationBoxUint8Array'
+import { parseGasStationConfiguration } from '@/parseGasStationConfiguration'
 import { Config } from '@algorandfoundation/algokit-utils'
 import { registerDebugEventHandlers } from '@algorandfoundation/algokit-utils-debug'
 import { algorandFixture } from '@algorandfoundation/algokit-utils/testing'
 import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
-import { BoxIdentifier } from '@algorandfoundation/algokit-utils/types/app-manager'
 import algosdk, { Address } from 'algosdk'
 import { beforeAll, beforeEach, describe, expect, test } from 'vitest'
 import { GasStationFactory } from '../artifacts/gas_station/GasStationClient'
-
 describe('GasStation contract', () => {
   const localnet = algorandFixture()
   beforeAll(() => {
@@ -58,9 +59,16 @@ describe('GasStation contract', () => {
     expect(suspendedAfterDeploy).toBe(0n)
     const params = await algod.getTransactionParams().do()
 
-    var box: BoxIdentifier = new Uint8Array(Buffer.concat([Buffer.from('c', 'ascii'), testAccount.publicKey]))
+    var box = getGasStationBoxUint8Array(testAccount) //: BoxIdentifier = new Uint8Array(Buffer.concat([Buffer.from('c', 'ascii'), testAccount.publicKey]))
     var data =
-      '{"Assets":[],"Apps":[],"Addresses":["RIOZSBBY6B7ODWUHT2PA5RNO723MC4UWBQ7OIF56CECON63CLNAFANTWFY"],"Version":1}'
+      '{"assets":[],"apps":[],"addresses":["RIOZSBBY6B7ODWUHT2PA5RNO723MC4UWBQ7OIF56CECON63CLNAFANTWFY"],"version":1}'
+
+    const dataFromCreate = createGasStationConfigurationV1(
+      [],
+      [],
+      ['RIOZSBBY6B7ODWUHT2PA5RNO723MC4UWBQ7OIF56CECON63CLNAFANTWFY'],
+    )
+    expect(dataFromCreate).toBe(data)
     await client.send.depositWithConfiguration({
       args: {
         txnDeposit: algosdk.makePaymentTxnWithSuggestedParamsFromObject({
@@ -88,10 +96,13 @@ describe('GasStation contract', () => {
     })
     expect(funderBox.balance).toBe(950_000n)
     expect(funderBox.configuration).toBe(data)
+    const configurationParsed = parseGasStationConfiguration(funderBox.configuration)
+    expect(configurationParsed.addresses.length).toBe(1)
+    expect(configurationParsed.addresses[0]).toBe('RIOZSBBY6B7ODWUHT2PA5RNO723MC4UWBQ7OIF56CECON63CLNAFANTWFY')
 
     var boxData = await algod.getApplicationBoxByName(client.appId, box).do()
     expect(Buffer.from(boxData.value).toString('hex')).toBe(
-      '00000000000e7ef0000a006e7b22417373657473223a5b5d2c2241707073223a5b5d2c22416464726573736573223a5b2252494f5a534242593642374f445755485432504135524e4f3732334d433455574251374f494635364345434f4e3633434c4e4146414e54574659225d2c2256657273696f6e223a317d',
+      '00000000000e7ef0000a006e7b22617373657473223a5b5d2c2261707073223a5b5d2c22616464726573736573223a5b2252494f5a534242593642374f445755485432504135524e4f3732334d433455574251374f494635364345434f4e3633434c4e4146414e54574659225d2c2276657273696f6e223a317d',
     )
   })
 })

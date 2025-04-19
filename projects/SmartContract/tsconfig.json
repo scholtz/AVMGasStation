@@ -16,7 +16,10 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["smart_contracts/**/*.ts"],
   "exclude": ["node_modules", "dist", "coverage"]

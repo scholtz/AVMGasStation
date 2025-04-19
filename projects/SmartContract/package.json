@@ -1,8 +1,23 @@
 {
-  "name": "smart_contracts",
+  "name": "biatec-avm-gas-station",
   "version": "1.0.0",
-  "description": "Smart contract deployer",
-  "main": "smart_contracts/index.ts",
+  "license": "MIT",
+  "categories": [
+    "Algorand",
+    "Other"
+  ],
+  "description": "This is the npm package for AVM Gas Station. With this project the funder can fund the transaction costs for the users.",
+  "author": {
+    "email": "scholtz-gs@biatec.io",
+    "name": "Ludovit Scholtz",
+    "url": "https://www.biatec.io"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "algokit compile ts smart_contracts --output-source-map --out-dir artifacts && algokit generate client smart_contracts/artifacts --output {app_spec_dir}/{contract_name}Client.ts",
     "deploy": "ts-node-dev --transpile-only --watch .env -r dotenv/config smart_contracts/index.ts",
@@ -13,7 +28,9 @@
     "format": "prettier --write .",
     "test": "vitest run --coverage",
     "test:watch": "vitest watch",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "build-package": "tsup",
+    "publishCmd": "npm publish"
   },
   "engines": {
     "node": ">=22.0",
@@ -40,6 +57,7 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.29.1",
+    "tsup": "^8.4.0",
     "vitest": "^2.1.8"
   },
   "overrides": {

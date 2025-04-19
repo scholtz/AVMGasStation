@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Algorand4" Version="4.0.2.2025041913" />
     <PackageReference Include="coverlet.collector" Version="6.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -25,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\dotnet-algorand-sdk\dotnet-algorand-sdk\dotnet-algorand-sdk.csproj" />
     <ProjectReference Include="..\AVMGasStation\AVMGasStation.csproj" />
   </ItemGroup>
 
