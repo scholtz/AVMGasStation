@@ -19,7 +19,7 @@ class UserStruct extends arc4.Struct<{
   balance: UintN64
   configuration: arc4.Str
 }> {}
-const version = 'BIATEC-GAS-01-01-01'
+export const version = 'BIATEC-GAS-01-01-01'
 
 export class GasStation extends Contract {
   public configuration = BoxMap<Address, UserStruct>({ keyPrefix: 'c' })

@@ -8,11 +8,19 @@ export const getGasStationClient = (
   let appId = 0n
   switch (env) {
     case 'aramidmain-v1.0':
+      appId = 176794n
+      break
+    case 'mainnet-v1.0':
+      appId = 2939506666n
+      break
+    case 'testnet-v1.0':
+      appId = 737918254n
+      break
+    case 'voimain-v1.0':
+      appId = 39960441n
+      break
     case 'betanet-v1.0':
     case 'fnet-v1':
-    case 'mainnet-v1.0':
-    case 'testnet-v1.0':
-    case 'voimain-v1.0':
       throw Error(`App was not deployed yet to ${env}`)
   }
 

@@ -1,9 +1,19 @@
 import { AlgorandClient } from '@algorandfoundation/algokit-utils'
 import algosdk, { Transaction, TransactionSigner } from 'algosdk'
-import { GasStationFactory } from '../smart_contracts/artifacts/gas_station/GasStationClient'
-
+import { GasStationClient, GasStationFactory } from '../smart_contracts/artifacts/gas_station/GasStationClient'
 const deploy = async () => {
+  /*
+set -o allexport
+source .env
+set +o allexport  
+  */
+  // console.log('process', process)
+  // console.log('process.env', process.env)
+  // console.log('process.env.ALGOD_SERVER', process.env.ALGOD_SERVER)
   if (!process.env.ALGOD_SERVER) {
+    throw Error('Algod Server is missing. Make sure you configure .env vars')
+  }
+  if (!process.env.INDEXER_SERVER) {
     throw Error('Algod Server is missing. Make sure you configure .env vars')
   }
   const signers: algosdk.Account[] = []
@@ -43,31 +53,55 @@ const deploy = async () => {
       return msigObject
     })
   }
-
-  var factory = new GasStationFactory({
-    algorand: AlgorandClient.fromConfig({
-      algodConfig: {
-        server: process.env.ALGOD_SERVER,
-      },
-    }),
-    updatable: true,
-    appName: 'gas-station',
-    defaultSender: msigAddress,
-    defaultSigner: signer,
-  })
-
-  console.log(`Deploying app`)
-  const { appClient } = await factory.deploy({
-    onUpdate: 'append',
-    onSchemaBreak: 'append',
-  })
-  if (process.env.EXECUTOR_ADDRESS) {
-    console.log(`Setting executor address to ${process.env.EXECUTOR_ADDRESS}`)
-    appClient.send.setAddressExecutive({
-      args: {
-        a: process.env.EXECUTOR_ADDRESS,
-      },
+  const appId = BigInt(process.env.APPID ?? '0')
+  if (appId == 0n) {
+    var factory = new GasStationFactory({
+      algorand: AlgorandClient.fromConfig({
+        algodConfig: {
+          server: process.env.ALGOD_SERVER,
+        },
+        indexerConfig: {
+          server: process.env.INDEXER_SERVER,
+        },
+      }),
+      //updatable: true,
+      appName: 'gas-station',
+      defaultSender: msigAddress,
+      defaultSigner: signer,
     })
+
+    console.log(`Deploying app`)
+    const { appClient } = await factory.deploy({
+      onUpdate: 'append',
+      onSchemaBreak: 'append',
+    })
+    if (process.env.EXECUTOR_ADDRESS) {
+      console.log(`Setting executor address to ${process.env.EXECUTOR_ADDRESS}`)
+      appClient.send.setAddressExecutive({
+        args: {
+          a: process.env.EXECUTOR_ADDRESS,
+        },
+      })
+    }
+  } else {
+    console.log(`Updating application ${appId}`)
+    // update application
+    var client = new GasStationClient({
+      algorand: AlgorandClient.fromConfig({
+        algodConfig: {
+          server: process.env.ALGOD_SERVER,
+        },
+        indexerConfig: {
+          server: process.env.INDEXER_SERVER,
+        },
+      }),
+      appId: appId,
+      appName: 'gas-station',
+      defaultSender: msigAddress,
+      defaultSigner: signer,
+    })
+
+    const result = await client.send.update.updateApplication({ args: { newVersion: 'BIATEC-GAS-01-01-01' } })
   }
   console.log(`DONE`)
 }
