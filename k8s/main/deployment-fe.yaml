@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gas-station-fe-app-deployment
+  namespace: biatec-gas-station
+spec:
+  selector:
+    matchLabels:
+      app: gas-station-fe-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gas-station-fe-app
+    spec:
+      containers:
+        - name: gas-station-fe-app
+          image: scholtz2/avm-gas-station-fe:1.2025.04.20-main
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 200m
+              memory: "200Mi"
+            limits:
+              cpu: 2000m
+              memory: "1000Mi"
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 2
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 2
+            terminationGracePeriodSeconds: 1
+          volumeMounts:
+            - name: gas-station-fe-main-conf
+              mountPath: /app/appsettings.json
+              subPath: appsettings.json
+      volumes:
+        - name: gas-station-fe-main-conf
+          configMap:
+            name: gas-station-fe-main-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gas-station-fe-service
+  namespace: biatec-gas-station
+spec:
+  type: ClusterIP
+  selector:
+    app: gas-station-fe-app
+  ports:
+    - name: http
+      protocol: TCP
+      appProtocol: http
+      port: 8080
+      targetPort: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gas-station-fe-ingress-main
+  namespace: biatec-gas-station
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  ingressClassName: "nginx"
+  tls:
+    - hosts:
+        - gas-station.de-4.biatec.io
+      secretName: tls-gas-station.de-4.biatec.io
+  rules:
+    - host: gas-station.de-4.biatec.io
+      http:
+        paths:
+          - path: /(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: gas-station-fe-service
+                port:
+                  number: 8080
