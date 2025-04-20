@@ -1,5 +1,16 @@
 <script setup lang="ts">
+import { useAppStore } from '@/stores/app'
 import MainButton from './MainButton.vue'
+import { useWallet } from '@txnlab/use-wallet-vue'
+import { useRoute, useRouter } from 'vue-router'
+const store = useAppStore()
+const { activeWallet, activeAccount } = useWallet()
+const router = useRouter()
+const route = useRoute()
+const clickLogout = async () => {
+  activeWallet.value?.disconnect()
+  router.push('/')
+}
 </script>
 
 <template>
@@ -14,12 +25,21 @@ import MainButton from './MainButton.vue'
           <span class="text-white text-xl font-bold"> AVM Gas Station</span>
         </RouterLink>
       </div>
-      <div class="flex items-center space-x-4 w-100">
-        <span class="text-white w-full">Balance: 1,000 ALGO</span>
+      <div class="flex items-center space-x-4 w-100" v-if="store.state.boxData">
+        <span class="text-white w-full">
+          Balance: {{ Number(store.state.boxData?.balance) / 1000000 }}
+          {{ store.state.tokenName }}
+        </span>
 
-        <RouterLink to="initial-deposit" class="w-full">
+        <RouterLink v-if="route.name == 'dashboard'" to="deposit" class="w-full">
           <MainButton class="px-4 py-2"> Deposit </MainButton>
         </RouterLink>
+        <RouterLink v-else to="dashboard" class="w-full">
+          <MainButton class="px-4 py-2"> Dashboard </MainButton>
+        </RouterLink>
+      </div>
+      <div v-else>
+        <MainButton @click="clickLogout" class="px-4 py-2"> Logout </MainButton>
       </div>
     </div>
   </nav>

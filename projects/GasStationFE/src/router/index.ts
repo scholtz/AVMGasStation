@@ -26,6 +26,11 @@ const router = createRouter({
       component: () => import('../views/InitialDeposit.vue'),
     },
     {
+      path: '/deposit',
+      name: 'deposit',
+      component: () => import('../views/DepositTokens.vue'),
+    },
+    {
       path: '/configuration-change',
       name: 'configuration-change',
       // route level code-splitting

@@ -19,7 +19,7 @@ class UserStruct extends arc4.Struct<{
   balance: UintN64
   configuration: arc4.Str
 }> {}
-export const version = 'BIATEC-GAS-01-01-01'
+export const version = 'BIATEC-GAS-01-01-02'
 
 export class GasStation extends Contract {
   public configuration = BoxMap<Address, UserStruct>({ keyPrefix: 'c' })
@@ -148,6 +148,23 @@ export class GasStation extends Contract {
       })
       this.configuration(sender).value = newValue.copy()
     }
+  }
+
+  /**
+   * Gas Funder can set configuration
+   *
+   * Service fee is 5% and is deducted on deposit, on deposit of 100 Algo, user receives 95 Algo credit for his users to use for gas
+   * @param txnDeposit Deposit transaction
+   * @param configuration Configration to be stored into the box
+   */
+  @arc4.abimethod()
+  public changeConfiguration(configuration: arc4.Str): void {
+    assert(!this.suspended.value, 'The smart contract is suspended at the moment')
+    assert(op.len(Bytes(configuration.native)) > 0, 'Configuration must be defined')
+    assert(op.substring(Bytes(configuration.native), 0, 1).toString() === '{', 'Invalid configuration provided')
+    var sender = new arc4.Address(Txn.sender)
+    assert(this.configuration(sender).exists, 'Change of the configuration can be executed only on existing boxes')
+    this.configuration(sender).value.configuration = configuration
   }
 
   /**

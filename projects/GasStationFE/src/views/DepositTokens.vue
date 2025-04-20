@@ -45,18 +45,14 @@ const saveConfigurationClick = async () => {
       activeAccount.value?.address,
       transactionSigner,
     )
-    const assets: bigint[] = state.tokens.split(',').map((s) => BigInt(s.trim()))
-    const apps: bigint[] = state.applications.split(',').map((s) => BigInt(s.trim()))
-    const addresses: string[] = state.addresses.split(',').map((s) => s.trim())
     const amount = BigInt(state.initialDeposit * 10 ** 6)
     const sender = activeAccount.value?.address
     if (!sender) throw Error('Address not found')
     state.submitting = true
     var params = await client.algorand.getSuggestedParams()
     params.lastValid = BigInt(params.firstValid) + 100n
-    var ret = await client.send.depositWithConfiguration({
+    var ret = await client.send.deposit({
       args: {
-        configuration: createGasStationConfigurationV1(assets, apps, addresses),
         txnDeposit: makePaymentTxnWithSuggestedParamsFromObject({
           amount: amount,
           receiver: client.appAddress,
@@ -85,50 +81,15 @@ const saveConfigurationClick = async () => {
     <PageHeader></PageHeader>
     <main class="container mx-auto px-6 py-8 flex-grow-1">
       <MainPanel class="container mx-auto px-6 py-8 flex-grow-1">
-        <h2 class="text-2xl font-bold text-white mb-6">Initial deposit</h2>
+        <h2 class="text-2xl font-bold text-white mb-6">Deposit</h2>
         <Text class="mb-4">
-          You can setup the configuration when the submittion of the transaction fails on the
-          specific application call, specific token or address the system will execute the funding
-          of the failed tx and will submit the tx once again to the chain. If you want to allow only
-          specific token transactions to be funded fill in the ASA id to the token id field and
-          leave all other fields empty. This will allow gas station to fund the MBR for the account
-          which is trying to opt in to your asset and fund the gas fees for this transaction. The
-          service fee is 5% of the deposit.
+          You can deposit more {{ store.state.tokenName }} here. The service fee is 5% of the
+          deposit.
         </Text>
         <div class="space-y-4">
           <div>
-            <label class="block text-teal-100 mb-2" for="applications">Application IDs</label>
-            <input
-              id="applications"
-              type="text"
-              v-model="state.applications"
-              class="w-full bg-white bg-opacity-20 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
-              placeholder="Enter comma-separated App IDs"
-            />
-          </div>
-          <div>
-            <label class="block text-teal-100 mb-2" for="tokens">Token IDs</label>
-            <input
-              id="tokens"
-              type="text"
-              v-model="state.tokens"
-              class="w-full bg-white bg-opacity-20 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
-              placeholder="Enter comma-separated Token IDs"
-            />
-          </div>
-          <div>
-            <label class="block text-teal-100 mb-2" for="addresses">Authorized Addresses</label>
-            <input
-              id="addresses"
-              type="text"
-              v-model="state.addresses"
-              class="w-full bg-white bg-opacity-20 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-300"
-              placeholder="Enter comma-separated addresses"
-            />
-          </div>
-          <div>
             <label class="block text-teal-100 mb-2" for="initialDeposit">
-              Initial deposit ({{ store.state.tokenName }})
+              Deposit amount ({{ store.state.tokenName }})
             </label>
             <input
               id="initialDeposit"
@@ -152,7 +113,7 @@ const saveConfigurationClick = async () => {
             @click="saveConfigurationClick"
             class="w-full bg-teal-500 text-white py-3 rounded-lg font-semibold hover:bg-teal-600 transition-all"
           >
-            Save Configuration
+            Do the deposit
           </button>
         </div>
       </MainPanel>

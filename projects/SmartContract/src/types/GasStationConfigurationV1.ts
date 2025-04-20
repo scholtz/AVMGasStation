@@ -1,6 +1,6 @@
 export type GasStationConfigurationV1 = {
-  assets: Number[]
-  apps: Number[]
+  assets: bigint[]
+  apps: bigint[]
   addresses: string[]
-  version: Number
+  version: bigint
 }

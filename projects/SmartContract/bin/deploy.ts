@@ -101,7 +101,7 @@ set +o allexport
       defaultSigner: signer,
     })
 
-    const result = await client.send.update.updateApplication({ args: { newVersion: 'BIATEC-GAS-01-01-01' } })
+    const result = await client.send.update.updateApplication({ args: { newVersion: 'BIATEC-GAS-01-01-02' } })
   }
   console.log(`DONE`)
 }

@@ -1,7 +1,9 @@
-import { GasStationClient } from '../smart_contracts/artifacts/gas_station/GasStationClient'
+import { GasStationClient, type UserStruct } from '../smart_contracts/artifacts/gas_station/GasStationClient'
+import { type GasStationConfigurationV1 } from './types/GasStationConfigurationV1'
 
 import { checkIfGasClientIsInitiated } from './checkIfGasClientIsInitiated'
 import { createGasStationConfigurationV1 } from './createGasStationConfigurationV1'
+import { getAppIdFromChainGenesisId } from './getAppIdFromChainGenesisId'
 import { getGasStationBoxIdentifier } from './getGasStationBoxIdentifier'
 import { getGasStationBoxUint8Array } from './getGasStationBoxUint8Array'
 import { getGasStationClient } from './getGasStationClient'
@@ -10,8 +12,11 @@ export {
   checkIfGasClientIsInitiated,
   createGasStationConfigurationV1,
   GasStationClient,
+  getAppIdFromChainGenesisId,
   getGasStationBoxIdentifier,
   getGasStationBoxUint8Array,
   getGasStationClient,
   parseGasStationConfiguration,
 }
+
+export type { GasStationConfigurationV1, UserStruct }
