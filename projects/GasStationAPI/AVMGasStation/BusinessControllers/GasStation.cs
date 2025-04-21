@@ -83,6 +83,16 @@ namespace AVMGasStation.BusinessControllers
         {
           check = true;
         }
+        foreach(var app in configObj?.Apps ?? [])
+        {
+          var appAddress = Address.ForApplication(app);
+          if (appAddress.Equals(receiver))
+          {
+            // fund MBR
+            check = true;
+            break;
+          }
+        }
         if (!check)
         {
           throw new Exception("Funder did not chose this call to be funded");
@@ -181,6 +191,31 @@ namespace AVMGasStation.BusinessControllers
           }
           await FundAccount(funder, (ulong)toFund, new Address(account), transactionId, genesis, appIdCause, assetIdCause);
           return await SubmitTransaction(funder, signedAVMTransactions, depth + 1);
+        }
+
+        // TransactionPool.Remember: transaction 43QD6Z22Y2DTM564TCQ44GKWX2VCUIVB6SQAHZUVMHZLQGBQHCZQ: account NCMVW77P2OQCPLRHWVCZ7BHSWZSLYHBCLHNGIU4T3JWGJQ5CEJLTXKBP5Q balance 128500 below min 157000 (0 assets)
+        string pattern2 = @"transaction (\w+):.*account (\w+) balance (\d+) below min (\d+) .*";
+        Match matchMBR = Regex.Match(exc.Result.Message, pattern2);
+
+        if (matchMBR.Success)
+        {
+
+          string transactionId = matchMBR.Groups[1].Value;
+          string account = matchMBR.Groups[2].Value;
+          string balance = matchMBR.Groups[3].Value;
+          string mbr = matchMBR.Groups[4].Value;
+
+          Console.WriteLine($"Transaction ID: {transactionId}");
+          Console.WriteLine($"Account: {account}");
+          Console.WriteLine($"Balance: {balance}");
+          Console.WriteLine($"MBR: {mbr}");
+
+          var balanceUlong = ulong.Parse(balance);
+          var mbrUlong = ulong.Parse(mbr);
+
+          await FundAccount(funder, mbrUlong - balanceUlong, new Address(account), transactionId, genesis, null, null);
+          return await SubmitTransaction(funder, signedAVMTransactions, depth + 1);
+
         }
 
         _logger.LogError(exc, "Failed to submit tx");
