@@ -7,6 +7,7 @@ import { makeArc14AuthHeader } from 'arc14'
 import { useWallet } from '@txnlab/use-wallet-vue'
 import { Algodv2, makePaymentTxnWithSuggestedParamsFromObject, type SuggestedParams } from 'algosdk'
 import { useAppStore } from '@/stores/app'
+import { useToast } from 'primevue/usetoast'
 
 const state = reactive({
   validity: 1000000,
@@ -37,6 +38,12 @@ const generateTokenClick = async () => {
     }
   } catch (e: any) {
     console.error(e)
+    const toast = useToast()
+    toast.add({
+      severity: 'error',
+      detail: e.message ?? e,
+      life: 10000,
+    })
     state.submitting = false
   }
 }

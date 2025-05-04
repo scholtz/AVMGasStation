@@ -54,7 +54,6 @@ export class GasStation extends Contract {
     this.suspended.value = false
     this.allDeposits.value = 0
   }
-
   /**
    * addressUdpater from global biatec configuration is allowed to update application
    */

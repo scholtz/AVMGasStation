@@ -15,6 +15,7 @@ import {
 } from 'algosdk'
 import { useWallet } from '@txnlab/use-wallet-vue'
 import router from '@/router'
+import { useToast } from 'primevue/usetoast'
 const { activeWallet, activeAccount, transactionSigner } = useWallet()
 const store = useAppStore()
 
@@ -71,6 +72,12 @@ const saveConfigurationClick = async () => {
     router.push({ name: 'dashboard' })
   } catch (e: any) {
     console.error(e)
+    const toast = useToast()
+    toast.add({
+      severity: 'error',
+      detail: e.message ?? e,
+      life: 10000,
+    })
     state.submitting = false
   }
 }

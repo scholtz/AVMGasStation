@@ -1,6 +1,6 @@
 {
   "name": "biatec-avm-gas-station",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "license": "MIT",
   "categories": [
     "Algorand",
@@ -37,7 +37,8 @@
     "npm": ">=9.0"
   },
   "dependencies": {
-    "@algorandfoundation/algorand-typescript": "~1.0.0-beta.68 <1.0.0"
+    "@algorandfoundation/algorand-typescript": "~1.0.0-beta.68 <1.0.0",
+    "arc200-client": "^1.0.3"
   },
   "devDependencies": {
     "@algorandfoundation/algokit-client-generator": "^5.0.0",
@@ -55,9 +56,9 @@
     "eslint": "^9.24.0",
     "prettier": "^3.5.3",
     "ts-node-dev": "^2.0.0",
+    "tsup": "^8.4.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.29.1",
-    "tsup": "^8.4.0",
     "vitest": "^2.1.8"
   },
   "overrides": {

@@ -20,6 +20,7 @@ using Algorand.AVM.ClientGenerator.ABI.ARC56;
 using AVMGasStation.GeneratedClients;
 using Newtonsoft.Json;
 using AVMGasStation.Model.GasConfiguration;
+using System.Diagnostics;
 
 namespace TestGasStation
 {
@@ -35,6 +36,10 @@ namespace TestGasStation
       var httpClient = HttpClientConfigurator.ConfigureHttpClient(ALGOD_API_ADDR, ALGOD_API_TOKEN);
       algodApiInstance = new DefaultApi(httpClient);
 
+      var txparamas = await algodApiInstance.TransactionParamsAsync();
+      var txParamsHash = Convert.ToBase64String(txparamas.GenesisHash);
+
+      Console.WriteLine("GenesisHash", txParamsHash);
 
       var executorAccount = ARC76.GetAccount(FundingAccount);
 
@@ -151,7 +156,7 @@ namespace TestGasStation
         assetId = assetTxInfo.AssetIndex;
       }
       Assert.That(assetId, Is.Not.Null);
-
+      Console.WriteLine($"ASA Id: {assetId}");
 
       // optin to asset with zero balance account
       var emptyAccount = new Account();
@@ -160,12 +165,14 @@ namespace TestGasStation
       var transParams = await algodApiInstance.TransactionParamsAsync();
       // 1. Mock logger
       var loggerMock = new Mock<ILogger<GasStation>>();
+      var genesisHash = Convert.ToBase64String(transParams.GenesisHash);
 
       // 2. deploy gas contract
 
       var client = new GasStationProxy(algodApiInstance, 0);
       await client.CreateApplication(executorAccount, 1000);
       Assert.That(client.appId, Is.GreaterThan(0));
+      Console.WriteLine($"client.appId: {client.appId}");
 
       // 3. Create IOptions mock or real object
 
@@ -176,7 +183,7 @@ namespace TestGasStation
         EmptySuccessOnFailure = false,
         AllowedNetworks = new AllowedNetworks()
         {
-          [transParams.GenesisId] = new AlgodConfig()
+          [genesisHash] = new AlgodConfig()
           {
             Token = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             Server = "http://localhost:4001/"
@@ -189,7 +196,7 @@ namespace TestGasStation
         FundingAccount = FundingAccount,
         ChainGenesis2AppId = new Dictionary<string, ulong>()
         {
-          [transParams.GenesisId] = client.appId
+          [genesisHash] = client.appId
         }
       });
 
@@ -238,6 +245,20 @@ namespace TestGasStation
 
       var optInResult = await gasStation.SubmitTransaction(funder.Address, new List<SignedTransaction>() { signedOptInTx });
       Assert.That(optInResult.Txid, Is.Not.Empty);
+
+
+      // creae arc4 token
+      var tx = new PaymentTransaction()
+      {
+        Sender = funder.Address,
+        Receiver = funder.Address,
+        Note = Encoding.ASCII.GetBytes("BiatecGasStation#ARC14"),
+      };
+      await tx.FillInParams(algodApiInstance);
+      tx.LastValid += 10000000;
+      var authTokenTxSigned = tx.Sign(funder);
+      var authTOken = $"SigTx {Convert.ToBase64String(Algorand.Utils.Encoder.EncodeToMsgPackOrdered(authTokenTxSigned))}";
+      Console.WriteLine(authTOken);
     }
 
     [Test]
@@ -254,7 +275,7 @@ namespace TestGasStation
 #endif
       await arc200.CreateApplication(funderAccount, 1000);
       Assert.That(arc200.appId, Is.GreaterThan(0));
-
+      Console.WriteLine($"ARC200 id: {arc200.appId}");
 
       var fundMinBalance = new PaymentTransaction()
       {
@@ -312,6 +333,9 @@ namespace TestGasStation
       };
       await txn.FillInParams(algodApiInstance);
       txn.Sender = funderAccount.Address;
+      var mn = funderAccount.ToMnemonic();
+      Console.WriteLine($"Funder {mn}");
+
       var signed = txn.Sign(funderAccount);
       var send = await algodApiInstance.TransactionsAsync(new List<SignedTransaction>() { signed });
       var txInfo = await Utils.WaitTransactionToComplete(algodApiInstance, send.Txid); // wait for newly created asset id
@@ -323,6 +347,7 @@ namespace TestGasStation
       Assert.That(assetId, Is.Not.Null);
 
       var transParams = await algodApiInstance.TransactionParamsAsync();
+      var genesisHash = Convert.ToBase64String(transParams.GenesisHash);
       // 1. Mock logger
       var loggerMock = new Mock<ILogger<GasStation>>();
 
@@ -331,7 +356,7 @@ namespace TestGasStation
       var client = new GasStationProxy(algodApiInstance, 0);
       await client.CreateApplication(executorAccount, 1000);
       Assert.That(client.appId, Is.GreaterThan(0));
-
+      Console.WriteLine($"Gas station appId: {client.appId}");
       // 3. Create IOptions mock or real object
 
       var algodOptions = Options.Create(new AlgorandAuthenticationOptionsV2
@@ -341,7 +366,7 @@ namespace TestGasStation
         EmptySuccessOnFailure = false,
         AllowedNetworks = new AllowedNetworks()
         {
-          [transParams.GenesisId] = new AlgodConfig()
+          [genesisHash] = new AlgodConfig()
           {
             Token = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             Server = "http://localhost:4001/"
@@ -354,7 +379,7 @@ namespace TestGasStation
         FundingAccount = FundingAccount,
         ChainGenesis2AppId = new Dictionary<string, ulong>()
         {
-          [transParams.GenesisId] = client.appId
+          [genesisHash] = client.appId
         }
       });
 
@@ -423,6 +448,7 @@ namespace TestGasStation
 
       // the magic is here.. now move from the empty account to some second empty account
       var emptyAccount2 = new Account();
+      Console.WriteLine($"emptyAccount2: {emptyAccount2.Address} {emptyAccount2.ToMnemonic()}");
 #if ATOKEN
       var boxRefArc200Empty2 = Encoding.ASCII.GetBytes("balances").Concat(emptyAccount2.Address.Bytes).ToArray();
 #else
@@ -448,6 +474,19 @@ namespace TestGasStation
 
       var receiveResult2 = await gasStation.SubmitTransaction(funder.Address, new List<SignedTransaction>() { signedTx2 });
       Assert.That(receiveResult2.Txid, Is.Not.Empty);
+
+      // creae arc4 token
+      var tx = new PaymentTransaction()
+      {
+        Sender = funder.Address,
+        Receiver = funder.Address,
+        Note = Encoding.ASCII.GetBytes("BiatecGasStation#ARC14"),
+      };
+      await tx.FillInParams(algodApiInstance);
+      tx.LastValid += 10000000;
+      var authTokenTxSigned = tx.Sign(funder);
+      var authTOken = $"SigTx {Convert.ToBase64String(Algorand.Utils.Encoder.EncodeToMsgPackOrdered(authTokenTxSigned))}";
+      Console.WriteLine(authTOken);
     }
   }
 }

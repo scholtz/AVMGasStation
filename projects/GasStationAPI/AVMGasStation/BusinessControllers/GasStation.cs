@@ -119,8 +119,8 @@ namespace AVMGasStation.BusinessControllers
     public async Task<PostTransactionsResponse> SubmitTransaction(Address funder, List<SignedTransaction> signedAVMTransactions, int depth = 0)
     {
       if (depth > 5) throw new Exception("Depth of funding is too high");
-      var genesis = signedAVMTransactions.First().Tx.GenesisId;
-      if (!algod.ContainsKey(genesis)) throw new Exception($"Chain for genesis id {genesis} not configured");
+      var genesis = Convert.ToBase64String(signedAVMTransactions.First().Tx.GenesisHash.Bytes);
+      if (!algod.ContainsKey(genesis)) throw new Exception($"Chain for genesis hash {genesis} not configured");
       try
       {
         var submitOk = await algod[genesis].TransactionsAsync(signedAVMTransactions);
@@ -219,7 +219,7 @@ namespace AVMGasStation.BusinessControllers
         }
 
         _logger.LogError(exc, "Failed to submit tx");
-        throw;
+        throw new Exception(exc.Result.Message, exc);
       }
       catch (Exception exc)
       {

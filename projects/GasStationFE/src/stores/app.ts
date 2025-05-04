@@ -15,6 +15,7 @@ type GasStationConfigurationV1 = {
 }
 
 export interface IState {
+  apiServer: string
   algodHost: string
   algodPort: number
   algodToken: string
@@ -33,6 +34,7 @@ export interface IState {
   configuration: GasStationConfigurationV1 | null
 }
 const defaultState: IState = {
+  apiServer: 'https://gas-station-api.biatec.io',
   algodHost: 'https://mainnet-api.algonode.cloud',
   algodPort: 443,
   algodToken: '',

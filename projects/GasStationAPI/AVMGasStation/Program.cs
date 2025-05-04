@@ -2,6 +2,7 @@
 using AlgorandAuthenticationV2;
 using AVMGasStation.BusinessControllers;
 using AVMGasStation.Model;
+using MessagePack.AspNetCoreMvcFormatter;
 
 namespace AVMGasStation
 {
@@ -13,7 +14,7 @@ namespace AVMGasStation
 
       // Add services to the container.
 
-      builder.Services.AddControllers();
+      builder.Services.AddControllers().AddNewtonsoftJson();
       // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
       builder.Services.AddEndpointsApiExplorer();
       builder.Services.AddSwaggerGen();
@@ -35,14 +36,30 @@ namespace AVMGasStation
 
       builder.Services.AddProblemDetails();
 
+
+      // Add CORS policy
+      var corsConfig = builder.Configuration.GetSection("Cors").AsEnumerable().Select(k => k.Value).Where(k => !string.IsNullOrEmpty(k)).ToArray();
+      if (!(corsConfig?.Length > 0)) throw new Exception("Cors not defined");
+
+      builder.Services.AddCors(options =>
+      {
+        options.AddDefaultPolicy(
+        builder =>
+        {
+          builder.WithOrigins(corsConfig)
+                          .SetIsOriginAllowedToAllowWildcardSubdomains()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials()
+                          .WithExposedHeaders("rowcount", "rowstate");
+        });
+      });
+
       var app = builder.Build();
 
-      // Configure the HTTP request pipeline.
-      if (app.Environment.IsDevelopment())
-      {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-      }
+      app.UseSwagger();
+      app.UseSwaggerUI();
+      app.UseCors();
 
       app.UseHttpsRedirection();
 

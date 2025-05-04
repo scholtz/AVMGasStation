@@ -130,6 +130,24 @@ const chains = [
     tokenName: 'testa',
     wallets: [WalletId.BIATEC, WalletId.DEFLY, WalletId.PERA, WalletId.WALLETCONNECT],
   },
+  {
+    name: 'Localnet',
+    code: 'dockernet-v1',
+    algodHost: 'http://localhost',
+    algodPort: 4001,
+    algodToken: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    indexerHost: 'http://localhost',
+    indexerPort: 8980,
+    indexerToken: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    tokenName: 'local',
+    wallets: [
+      WalletId.BIATEC,
+      WalletId.KIBISIS,
+      WalletId.DEFLY,
+      WalletId.PERA,
+      WalletId.WALLETCONNECT,
+    ],
+  },
 ]
 </script>
 <template>

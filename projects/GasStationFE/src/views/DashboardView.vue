@@ -22,6 +22,7 @@ import {
   parseGasStationConfiguration,
 } from 'biatec-avm-gas-station'
 import algosdk, { Address, Algodv2, makePaymentTxnWithSuggestedParamsFromObject } from 'algosdk'
+import { useToast } from 'primevue/usetoast'
 
 const { activeWallet, activeAccount, transactionSigner } = useWallet()
 const router = useRouter()
@@ -108,6 +109,12 @@ const loadConfiguration = async () => {
     console.log('store.state.configuration', store.state.configuration)
   } catch (e: any) {
     console.error(e)
+    const toast = useToast()
+    toast.add({
+      severity: 'error',
+      detail: e.message ?? e,
+      life: 10000,
+    })
   }
   if (!store.state.boxData) {
     router.push({ name: 'initial-deposit' })
@@ -183,7 +190,7 @@ watch(
               </div>
             </div>
           </div>
-          <div class="bg-teal-900 bg-opacity-50 p-6 rounded-xl backdrop-blur-lg">
+          <!-- <div class="bg-teal-900 bg-opacity-50 p-6 rounded-xl backdrop-blur-lg">
             <H2>Recent Activity</H2>
 
             <div class="mt-8">
@@ -204,7 +211,7 @@ watch(
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </main>
     </div>

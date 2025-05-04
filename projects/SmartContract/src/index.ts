@@ -8,6 +8,7 @@ import { getGasStationBoxIdentifier } from './getGasStationBoxIdentifier'
 import { getGasStationBoxUint8Array } from './getGasStationBoxUint8Array'
 import { getGasStationClient } from './getGasStationClient'
 import { parseGasStationConfiguration } from './parseGasStationConfiguration'
+import { sendRawTransaction, type IPostTransactionsResponse } from './sendRawTransaction'
 export {
   checkIfGasClientIsInitiated,
   createGasStationConfigurationV1,
@@ -17,6 +18,7 @@ export {
   getGasStationBoxUint8Array,
   getGasStationClient,
   parseGasStationConfiguration,
+  sendRawTransaction,
 }
 
-export type { GasStationConfigurationV1, UserStruct }
+export type { GasStationConfigurationV1, IPostTransactionsResponse, UserStruct }

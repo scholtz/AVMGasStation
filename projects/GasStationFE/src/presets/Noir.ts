@@ -1,7 +1,7 @@
 import { definePreset } from '@primevue/themes'
-import Lara from '@primevue/themes/lara'
+import DefualtTheme from '@primevue/themes/material'
 
-const Noir = definePreset(Lara, {
+const Noir = definePreset(DefualtTheme, {
   semantic: {
     primary: {
       50: '{teal.50}',

@@ -18,12 +18,15 @@ import {
   NetworkConfigBuilder,
 } from '@txnlab/use-wallet-vue'
 
-import 'primeicons/primeicons.css'
 //import Noir from '@/presets/Noir'
 import './style.css'
 import '@/assets/flags.css'
 import { Buffer } from 'buffer'
 
+import PrimeVue from 'primevue/config'
+import Noir from './presets/Noir'
+
+import 'primeicons/primeicons.css'
 // @ts-ignore
 window.Buffer = Buffer
 
@@ -40,16 +43,16 @@ window.process = {
 const app = createApp(App)
 app.use(createPinia())
 
-// app.use(PrimeVue, {
-//   theme: {
-//     preset: Noir,
-//     options: {
-//       prefix: 'p',
-//       darkModeSelector: '.p-dark',
-//       cssLayer: false,
-//     },
-//   },
-// })
+app.use(PrimeVue, {
+  theme: {
+    preset: Noir,
+    options: {
+      prefix: 'p',
+      darkModeSelector: '.p-dark',
+      cssLayer: false,
+    },
+  },
+})
 
 const networks = new NetworkConfigBuilder()
   .addNetwork('voi-mainnet', {
@@ -73,6 +76,17 @@ const networks = new NetworkConfigBuilder()
     genesisHash: 'PgeQVJJgx/LYKJfIEz7dbfNPuXmDyJ+O7FwQ4XL9tE8=',
     genesisId: 'aramidmain-v1.0',
     caipChainId: 'algorand:PgeQVJJgx_LYKJfIEz7dbfNPuXmDyJ-O',
+  })
+  .addNetwork('dockernet', {
+    algod: {
+      token: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      baseServer: 'http://localhost',
+      port: '4001',
+    },
+    isTestnet: true,
+    genesisHash: 'NbFPTiXlg5yw4FcZLqpoxnEPZjrfxb471aNSHp/e1Yw=',
+    genesisId: 'dockernet-v1',
+    caipChainId: 'algorand:NbFPTiXlg5yw4FcZLqpoxnEPZjrfxb47',
   })
   .build()
 

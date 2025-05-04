@@ -4,6 +4,10 @@ import { RouterView } from 'vue-router'
 // const store = useAppStore()
 import { Gradient } from 'whatamesh'
 import { onMounted, watch } from 'vue'
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast'
+
+const toast = useToast()
 
 let gradient = new Gradient()
 onMounted(() => {
@@ -11,6 +15,15 @@ onMounted(() => {
   gradient.initGradient('#gradient-canvas')
   console.log('gradient done')
 })
+
+const testToastClick = () => {
+  const toast = useToast()
+  toast.add({
+    severity: 'error',
+    detail: 'Test toast',
+    life: 5000,
+  })
+}
 
 // watch(
 //   store.state,
@@ -24,7 +37,8 @@ onMounted(() => {
 </script>
 <template>
   <canvas id="gradient-canvas" data-transition-in />
-
+  <Toast />
+  <!-- <Button @click="testToastClick">Test toast</Button> -->
   <RouterView />
 </template>
 <style>

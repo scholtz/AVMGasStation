@@ -47,6 +47,11 @@ const router = createRouter({
       component: () => import('../views/FundingToken.vue'),
     },
     {
+      path: '/try-it-out',
+      name: 'try-it-out',
+      component: () => import('../views/TryItOut.vue'),
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: '404',
       component: () => import('../views/Error404.vue'),

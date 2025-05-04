@@ -25,11 +25,17 @@ import PageHeaderUnauthenticated from '@/components/PageHeaderUnauthenticated.vu
               Become a Funder
               <i class="pi pi-arrow-right ml-2 text-lg"></i>
             </RouterLink>
-            <button
+            <RouterLink
+              to="/try-it-out"
+              class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:bg-opacity-10 transition-all"
+            >
+              Try it out
+            </RouterLink>
+            <!-- <button
               class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:bg-opacity-10 transition-all"
             >
               Learn More
-            </button>
+            </button> -->
           </div>
         </div>
         <div class="grid grid-cols-2 gap-6">

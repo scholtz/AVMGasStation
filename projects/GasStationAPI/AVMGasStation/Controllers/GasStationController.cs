@@ -30,11 +30,26 @@ public class GasStationController : ControllerBase
   }
 
   [HttpPost("submit-transaction")]
-  public Task<PostTransactionsResponse> SubmitTransaction(string signedAVMTransaction)
+  public async Task<PostTransactionsResponse> SubmitTransaction()
   {
     var funder = new Address(User?.Identity?.Name ?? throw new Exception("Invalid authenticated user"));
 
-    var txs = Algorand.Utils.Encoder.DecodeFromMsgPack<List<SignedTransaction>>(Convert.FromBase64String(signedAVMTransaction));
+    using var stream = new MemoryStream();
+    await Request.Body.CopyToAsync(stream);
+    stream.Position = 0;
+
+    var data = stream.ToArray();
+    var txs = new List<SignedTransaction>();
+    try
+    {
+      var tx = Algorand.Utils.Encoder.DecodeFromMsgPack<SignedTransaction>(data);
+      txs = [tx];
+    }
+    catch
+    {
+      txs = Algorand.Utils.Encoder.DecodeFromMsgPack<List<SignedTransaction>>(data);
+    }
+    
     if (txs?.Any() != true) throw new Exception("Unable to parse transactions");
     var genesis = txs.First().Tx?.GenesisId ?? throw new Exception("Unable to parse genesis from the first transaction");
     var authHeader = Request.Headers.Authorization.ToString();
@@ -43,7 +58,7 @@ public class GasStationController : ControllerBase
       authHeader = authHeader.Substring(6);
     }
     var sigTx = Algorand.Utils.Encoder.DecodeFromMsgPack<SignedTransaction>(Convert.FromBase64String(authHeader));
-    var group = txs.First().Tx.Group.Bytes;
+    var group = txs.First().Tx?.Group?.Bytes ?? [];
     foreach (var tx in txs)
     {
       if (tx.Tx.GenesisId != sigTx.Tx.GenesisId) throw new Exception("Genesis hash in one of the tx does not match the auth header");
@@ -55,7 +70,7 @@ public class GasStationController : ControllerBase
         }
       }
     }
-
-    return _gasStation.SubmitTransaction(funder, txs);
+    var ret = await _gasStation.SubmitTransaction(funder, txs);
+    return ret;
   }
 }
