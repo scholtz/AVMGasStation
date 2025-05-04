@@ -77,17 +77,17 @@ const networks = new NetworkConfigBuilder()
     genesisId: 'aramidmain-v1.0',
     caipChainId: 'algorand:PgeQVJJgx_LYKJfIEz7dbfNPuXmDyJ-O',
   })
-  .addNetwork('dockernet', {
-    algod: {
-      token: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      baseServer: 'http://localhost',
-      port: '4001',
-    },
-    isTestnet: true,
-    genesisHash: 'NbFPTiXlg5yw4FcZLqpoxnEPZjrfxb471aNSHp/e1Yw=',
-    genesisId: 'dockernet-v1',
-    caipChainId: 'algorand:NbFPTiXlg5yw4FcZLqpoxnEPZjrfxb47',
-  })
+  // .addNetwork('dockernet', {
+  //   algod: {
+  //     token: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  //     baseServer: 'http://localhost',
+  //     port: '4001',
+  //   },
+  //   isTestnet: true,
+  //   genesisHash: 'NbFPTiXlg5yw4FcZLqpoxnEPZjrfxb471aNSHp/e1Yw=',
+  //   genesisId: 'dockernet-v1',
+  //   caipChainId: 'algorand:NbFPTiXlg5yw4FcZLqpoxnEPZjrfxb47',
+  // })
   .build()
 
 app.use(WalletManagerPlugin, {
